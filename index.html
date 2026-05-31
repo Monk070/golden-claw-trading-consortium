@@ -757,6 +757,14 @@
                         <div class="cart-total">Total: <span id="cart-total">0</span> gold</div>
                     </div>
                     <div class="form-group mt-10">
+                        <label>Character Name *</label>
+                        <input type="text" id="order-char-name" placeholder="Your character's name..." style="width:100%">
+                    </div>
+                    <div class="form-group">
+                        <label>Guild / Faction <span class="muted">(optional)</span></label>
+                        <input type="text" id="order-guild" placeholder="e.g. Companions, Thieves Guild..." style="width:100%">
+                    </div>
+                    <div class="form-group">
                         <label>Order Notes</label>
                         <textarea id="order-notes" placeholder="Special instructions..."></textarea>
                     </div>
@@ -1653,7 +1661,14 @@ async function submitOrder() {
     const keys = Object.keys(cart);
     if (keys.length === 0) { notify('Cart is empty.', true); return; }
 
+    const charName = document.getElementById('order-char-name').value.trim();
+    if (!charName) { notify('Please enter your character name.', true); return; }
+    const guild = document.getElementById('order-guild').value.trim();
     const notes = document.getElementById('order-notes').value.trim();
+
+    // Build display name: "CharName (Guild)" or just "CharName"
+    const displayName = guild ? `${charName} — ${guild}` : charName;
+
     let total = 0;
     const items = keys.map(key => {
         const qty = cart[key];
@@ -1664,7 +1679,7 @@ async function submitOrder() {
 
     const { data: order, error } = await sb.from('orders').insert({
         customer_id: currentUser.id,
-        customer_name: userName,
+        customer_name: displayName,
         notes: notes || null,
         total_price: total
     }).select().single();
@@ -1678,6 +1693,8 @@ async function submitOrder() {
     if (itemErr) { notify(itemErr.message, true); return; }
 
     cart = {};
+    document.getElementById('order-char-name').value = '';
+    document.getElementById('order-guild').value = '';
     document.getElementById('order-notes').value = '';
     notify('Order placed successfully!');
     renderCart();
