@@ -712,6 +712,25 @@
     <span class="login-note">Members only — authorised by the Guild Master</span>
 </div>
 
+<!-- ===================== FIRST-TIME CHARACTER SETUP ===================== -->
+<div id="setup-gate" class="login-gate" style="display:none;">
+    <h2>Enter the Guildhall</h2>
+    <p>Before you may conduct business, we need the name of your character in Tamriel.</p>
+    <div style="width:100%;max-width:400px;text-align:left;">
+        <div class="form-group">
+            <label style="color:var(--parchment-dark);">Character Name *</label>
+            <input type="text" id="setup-char-name" placeholder="e.g. Ragnar the Bold" style="width:100%;font-size:1.1em;padding:10px 14px;">
+        </div>
+        <div class="form-group">
+            <label style="color:var(--parchment-dark);">Profession <span class="muted">(optional)</span></label>
+            <input type="text" id="setup-profession" placeholder="e.g. Blacksmith, Warrior, Merchant..." style="width:100%;font-size:1.1em;padding:10px 14px;">
+        </div>
+    </div>
+    <button class="btn-primary" style="font-size:1.1em;padding:12px 36px;margin-top:10px;" onclick="saveCharacterSetup()">Enter the Consortium</button>
+    <div class="login-divider"></div>
+    <span class="login-note" id="setup-discord-name"></span>
+</div>
+
 <!-- ===================== MAIN CONTENT ===================== -->
 <div class="page-wrapper app-content" id="app-content">
 <div class="content-area">
@@ -1128,6 +1147,7 @@ const CATEGORIES = [...new Set(Object.values(ALL_ITEMS).map(i => i.category))].s
 let currentUser = null;
 let userRole = 'viewer';
 let userName = 'Adventurer';
+let characterName = '';    // set during first-time setup
 let customPrices = {};   // { item_key: price }
 let recipes = [];
 let recipeMaterials = {}; // { recipe_id: [{ item_key, quantity }] }
@@ -1145,33 +1165,48 @@ function canUpdateOrders() { return ['admin','quartermaster','blacksmith'].inclu
 function isAdmin() { return userRole === 'admin'; }
 
 async function loadUserRole() {
-    if (!currentUser) { userRole = 'viewer'; userName = 'Adventurer'; return; }
-    const { data, error } = await sb.from('profiles').select('role, display_name, avatar_url').eq('id', currentUser.id).single();
+    if (!currentUser) { userRole = 'viewer'; userName = 'Adventurer'; characterName = ''; return; }
+    const { data, error } = await sb.from('profiles').select('role, display_name, avatar_url, character_name').eq('id', currentUser.id).single();
     if (data) {
         userRole = data.role || 'viewer';
         userName = data.display_name || 'Adventurer';
+        characterName = data.character_name || '';
     }
 }
 
 function updateAuthUI() {
     const bar = document.getElementById('auth-bar');
     const loginGate = document.getElementById('login-gate');
+    const setupGate = document.getElementById('setup-gate');
     const appContent = document.getElementById('app-content');
     const tabs = document.getElementById('main-tabs');
 
-    if (currentUser) {
+    if (currentUser && characterName) {
+        // Fully set up — show the app
+        const displayLabel = `${characterName} (${userName})`;
         const roleLabel = userRole.charAt(0).toUpperCase() + userRole.slice(1);
         bar.innerHTML = `
-            <span class="auth-name">${userName}</span>
+            <span class="auth-name">${displayLabel}</span>
             <span class="badge badge-${userRole}">${roleLabel}</span>
             <button onclick="signOut()">Sign Out</button>
         `;
         loginGate.style.display = 'none';
+        setupGate.style.display = 'none';
         appContent.classList.add('visible');
         tabs.style.display = 'flex';
+    } else if (currentUser && !characterName) {
+        // Logged in but no character name — show setup
+        bar.innerHTML = `<button onclick="signOut()">Sign Out</button>`;
+        loginGate.style.display = 'none';
+        setupGate.style.display = 'flex';
+        appContent.classList.remove('visible');
+        tabs.style.display = 'none';
+        document.getElementById('setup-discord-name').textContent = `Signed in as ${userName}`;
     } else {
+        // Not logged in
         bar.innerHTML = '';
         loginGate.style.display = 'flex';
+        setupGate.style.display = 'none';
         appContent.classList.remove('visible');
         tabs.style.display = 'none';
     }
@@ -1195,7 +1230,39 @@ async function signOut() {
     currentUser = null;
     userRole = 'viewer';
     userName = 'Adventurer';
+    characterName = '';
     cart = {};
+    updateAuthUI();
+    renderAll();
+}
+
+async function saveCharacterSetup() {
+    const charName = document.getElementById('setup-char-name').value.trim();
+    if (!charName) { notify('Please enter your character name.', true); return; }
+    const profession = document.getElementById('setup-profession').value.trim();
+
+    // Update profile with character name
+    const { error: profileErr } = await sb.from('profiles').update({
+        character_name: charName
+    }).eq('id', currentUser.id);
+
+    if (profileErr) { notify(profileErr.message, true); return; }
+
+    // Auto-create a member entry
+    const { error: memberErr } = await sb.from('members').insert({
+        name: charName,
+        discord_name: userName,
+        profile_id: currentUser.id,
+        profession: profession || null,
+        rank: 'Initiate',
+        joined_date: new Date().toISOString().split('T')[0]
+    });
+
+    if (memberErr) { notify(memberErr.message, true); return; }
+
+    characterName = charName;
+    notify('Welcome to the Consortium, ' + charName + '!');
+    await loadAllData();
     updateAuthUI();
     renderAll();
 }
@@ -1921,13 +1988,14 @@ function renderMembers() {
     }
 
     let html = `<table><thead><tr>
-        <th>Name</th><th>Profession</th><th>Rank</th><th>Joined</th><th>Notes</th>
+        <th>Character</th><th>Discord</th><th>Profession</th><th>Rank</th><th>Joined</th><th>Notes</th>
         ${isAdmin() ? '<th style="text-align:center">Actions</th>' : ''}
     </tr></thead><tbody>`;
 
     members.forEach(m => {
         html += `<tr>
             <td style="font-weight:600">${m.name}</td>
+            <td class="muted">${m.discord_name || '—'}</td>
             <td>${m.profession || '—'}</td>
             <td>${m.rank || '—'}</td>
             <td class="muted">${m.joined_date || '—'}</td>
@@ -2034,15 +2102,16 @@ sb.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user || null;
     if (currentUser) {
         await loadUserRole();
+        if (characterName) {
+            await loadAllData();
+            renderAll();
+        }
     } else {
         userRole = 'viewer';
         userName = 'Adventurer';
+        characterName = '';
     }
     updateAuthUI();
-    if (!wasLoggedIn && currentUser) {
-        await loadAllData();
-        renderAll();
-    }
 });
 
 async function init() {
@@ -2050,8 +2119,10 @@ async function init() {
     if (session) {
         currentUser = session.user;
         await loadUserRole();
-        await loadAllData();
-        renderAll();
+        if (characterName) {
+            await loadAllData();
+            renderAll();
+        }
     }
     updateAuthUI();
 }
