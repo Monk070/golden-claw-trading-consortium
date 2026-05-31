@@ -150,6 +150,15 @@
             background: var(--parchment);
         }
 
+        .tab-separator {
+            width: 2px;
+            background: var(--gold-dark);
+            opacity: 0.4;
+            margin: 4px 12px;
+            align-self: stretch;
+            border-radius: 1px;
+        }
+
         /* ===== CONTENT AREA ===== */
         .content-area {
             background: var(--parchment);
@@ -684,11 +693,12 @@
         <button class="btn-discord" onclick="signInDiscord()">Sign in with Discord</button>
     </div>
     <nav class="main-tabs" id="main-tabs" style="display:none;">
-        <button class="main-tab active" data-tab="recipes">Recipes</button>
+        <button class="main-tab active" data-tab="order">Place Order</button>
+        <div class="tab-separator"></div>
         <button class="main-tab" data-tab="prices">Price List</button>
-        <button class="main-tab" data-tab="order">Place Order</button>
-        <button class="main-tab" data-tab="orders">Orders</button>
+        <button class="main-tab" data-tab="recipes">Recipes</button>
         <button class="main-tab" data-tab="inventory">Inventory</button>
+        <button class="main-tab" data-tab="orders">Orders</button>
         <button class="main-tab" data-tab="members">Members</button>
     </nav>
 </header>
@@ -707,7 +717,7 @@
 <div class="content-area">
 
     <!-- ============ RECIPES TAB ============ -->
-    <div class="tab-panel active" id="panel-recipes">
+    <div class="tab-panel" id="panel-recipes">
         <div class="toolbar">
             <h2 class="section-title" style="border:none;margin:0;padding:0;">Blacksmith Recipes</h2>
             <div class="toolbar-right">
@@ -735,7 +745,7 @@
     </div>
 
     <!-- ============ PLACE ORDER TAB ============ -->
-    <div class="tab-panel" id="panel-order">
+    <div class="tab-panel active" id="panel-order">
         <h2 class="section-title">Place an Order</h2>
         <div class="order-grid">
             <div>
