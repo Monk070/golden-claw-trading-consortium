@@ -874,7 +874,15 @@
 const SUPABASE_URL  = 'https://dfwbisofrxtwrxtmthcp.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmd2Jpc29mcnh0d3J4dG10aGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNTQ4ODcsImV4cCI6MjA5NTgzMDg4N30.Qcy6Vqjb2Lyfd2NI4SHzne1vy2_9p8P2XjdelmJLZ-M';
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: 'gctc-auth',
+        storage: window.localStorage
+    }
+});
 
 // ================================================================
 //  ITEM DATABASE — Comprehensive Skyrim item list
