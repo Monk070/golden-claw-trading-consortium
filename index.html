@@ -605,6 +605,56 @@
         .gap-10 { gap: 10px; }
         .hidden { display: none !important; }
 
+        /* ===== LOGIN LANDING PAGE ===== */
+        .login-gate {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .login-gate h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8em;
+            color: var(--gold);
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+        }
+
+        .login-gate p {
+            font-family: 'MedievalSharp', cursive;
+            color: var(--parchment-dark);
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+
+        .login-gate .btn-discord {
+            font-size: 1.1em;
+            padding: 14px 36px;
+            border-radius: 5px;
+        }
+
+        .login-gate .login-divider {
+            width: 200px;
+            height: 1px;
+            background: var(--gold-dark);
+            margin: 25px 0;
+            opacity: 0.5;
+        }
+
+        .login-gate .login-note {
+            font-size: 0.85em;
+            color: var(--parchment-dark);
+            opacity: 0.6;
+        }
+
+        .app-content { display: none; }
+        .app-content.visible { display: block; }
+
         .no-data {
             text-align: center;
             padding: 40px 20px;
@@ -633,7 +683,7 @@
     <div id="auth-bar" class="auth-bar">
         <button class="btn-discord" onclick="signInDiscord()">Sign in with Discord</button>
     </div>
-    <nav class="main-tabs" id="main-tabs">
+    <nav class="main-tabs" id="main-tabs" style="display:none;">
         <button class="main-tab active" data-tab="recipes">Recipes</button>
         <button class="main-tab" data-tab="prices">Price List</button>
         <button class="main-tab" data-tab="order">Place Order</button>
@@ -643,8 +693,17 @@
     </nav>
 </header>
 
+<!-- ===================== LOGIN LANDING PAGE ===================== -->
+<div id="login-gate" class="login-gate">
+    <h2>Welcome, Traveller</h2>
+    <p>The Golden Claw Trading Consortium conducts its business behind closed doors. Sign in with Discord to enter the guildhall.</p>
+    <button class="btn-discord" onclick="signInDiscord()">Sign in with Discord</button>
+    <div class="login-divider"></div>
+    <span class="login-note">Members only — authorised by the Guild Master</span>
+</div>
+
 <!-- ===================== MAIN CONTENT ===================== -->
-<div class="page-wrapper">
+<div class="page-wrapper app-content" id="app-content">
 <div class="content-area">
 
     <!-- ============ RECIPES TAB ============ -->
@@ -1078,6 +1137,10 @@ async function loadUserRole() {
 
 function updateAuthUI() {
     const bar = document.getElementById('auth-bar');
+    const loginGate = document.getElementById('login-gate');
+    const appContent = document.getElementById('app-content');
+    const tabs = document.getElementById('main-tabs');
+
     if (currentUser) {
         const roleLabel = userRole.charAt(0).toUpperCase() + userRole.slice(1);
         bar.innerHTML = `
@@ -1085,8 +1148,14 @@ function updateAuthUI() {
             <span class="badge badge-${userRole}">${roleLabel}</span>
             <button onclick="signOut()">Sign Out</button>
         `;
+        loginGate.style.display = 'none';
+        appContent.classList.add('visible');
+        tabs.style.display = 'flex';
     } else {
-        bar.innerHTML = `<button class="btn-discord" onclick="signInDiscord()">Sign in with Discord</button>`;
+        bar.innerHTML = '';
+        loginGate.style.display = 'flex';
+        appContent.classList.remove('visible');
+        tabs.style.display = 'none';
     }
     // Show/hide admin buttons
     document.getElementById('btn-add-recipe').classList.toggle('hidden', !canManage());
@@ -1954,10 +2023,10 @@ async function init() {
     if (session) {
         currentUser = session.user;
         await loadUserRole();
+        await loadAllData();
+        renderAll();
     }
-    await loadAllData();
     updateAuthUI();
-    renderAll();
 }
 
 init();
