@@ -1162,6 +1162,7 @@ let characterName = '';    // set during first-time setup
 let actualRole = 'viewer'; // real role from DB
 let viewAsRole = null;     // admin "view as" override
 let customPrices = {};   // { item_key: price }
+let storeItems = {};     // { item_key: true } — items enabled for sale
 let recipes = [];
 let recipeMaterials = {}; // { recipe_id: [{ item_key, quantity }] }
 let orders = [];
@@ -1331,6 +1332,12 @@ async function loadCustomPrices() {
     (data || []).forEach(r => { customPrices[r.item_key] = r.custom_price; });
 }
 
+async function loadStoreItems() {
+    const { data } = await sb.from('store_items').select('item_key');
+    storeItems = {};
+    (data || []).forEach(r => { storeItems[r.item_key] = true; });
+}
+
 async function loadRecipes() {
     const { data } = await sb.from('recipes').select('*').order('name');
     recipes = data || [];
@@ -1366,6 +1373,7 @@ async function loadMembers() {
 async function loadAllData() {
     await Promise.all([
         loadCustomPrices(),
+        loadStoreItems(),
         loadRecipes(),
         loadOrders(),
         loadInventory(),
@@ -1621,25 +1629,32 @@ function renderPriceList() {
         return;
     }
 
-    let html = '<table><thead><tr><th>Item</th><th>Category</th><th style="text-align:right">Price (Gold)</th></tr></thead><tbody>';
+    const showToggle = canManage();
+    const cols = showToggle ? 4 : 3;
+    let html = `<table><thead><tr>${showToggle ? '<th style="text-align:center;width:60px;">In Store</th>' : ''}<th>Item</th><th>Category</th><th style="text-align:right">Price (Gold)</th></tr></thead><tbody>`;
     let lastCat = '';
     entries.forEach(([key, item]) => {
         if (item.category !== lastCat) {
             lastCat = item.category;
-            html += `<tr class="cat-header"><td colspan="3">${item.category}</td></tr>`;
+            html += `<tr class="cat-header"><td colspan="${cols}">${item.category}</td></tr>`;
         }
         const price = getPrice(key);
         const isCustom = customPrices[key] !== undefined;
+        const inStore = !!storeItems[key];
         const priceCell = canManage()
             ? `<span class="editable-price" onclick="editPrice('${key}', this)" title="Click to edit">${price}${isCustom ? ' *' : ''}</span>`
             : `${price}${isCustom ? ' *' : ''}`;
+        const toggleCell = showToggle
+            ? `<td class="text-center"><input type="checkbox" ${inStore ? 'checked' : ''} onchange="toggleStoreItem('${key}', this.checked)" style="cursor:pointer;width:18px;height:18px;accent-color:var(--gold-dark);"></td>`
+            : '';
 
-        html += `<tr><td>${item.name}</td><td class="muted">${item.category}</td><td class="text-right gold">${priceCell}</td></tr>`;
+        html += `<tr style="${!inStore && showToggle ? 'opacity:0.5;' : ''}">${toggleCell}<td>${item.name}</td><td class="muted">${item.category}</td><td class="text-right gold">${priceCell}</td></tr>`;
     });
     html += '</tbody></table>';
-    if (Object.keys(customPrices).length > 0) {
-        html += '<p class="muted mt-10">* = custom price (differs from default)</p>';
-    }
+    let notes = [];
+    if (Object.keys(customPrices).length > 0) notes.push('* = custom price (differs from default)');
+    if (showToggle) notes.push('Unchecked items are hidden from the Place Order page');
+    if (notes.length) html += `<p class="muted mt-10">${notes.join(' &nbsp;|&nbsp; ')}</p>`;
     document.getElementById('price-table-wrap').innerHTML = html;
 }
 
@@ -1685,6 +1700,20 @@ async function editPrice(key, el) {
     });
 }
 
+async function toggleStoreItem(key, enabled) {
+    if (!canManage()) return;
+    if (enabled) {
+        const { error } = await sb.from('store_items').upsert({ item_key: key }, { onConflict: 'item_key' });
+        if (error) { notify(error.message, true); return; }
+        storeItems[key] = true;
+    } else {
+        const { error } = await sb.from('store_items').delete().eq('item_key', key);
+        if (error) { notify(error.message, true); return; }
+        delete storeItems[key];
+    }
+    renderOrderItems();
+}
+
 // ================================================================
 //  RENDER: PLACE ORDER
 // ================================================================
@@ -1704,6 +1733,7 @@ function renderOrderItems() {
 
     const entries = Object.entries(ALL_ITEMS)
         .filter(([k, v]) => {
+            if (!storeItems[k]) return false; // only show items enabled in store
             if (catFilter && v.category !== catFilter) return false;
             if (search && !v.name.toLowerCase().includes(search)) return false;
             return true;
@@ -1711,6 +1741,11 @@ function renderOrderItems() {
         .sort((a,b) => a[1].name.localeCompare(b[1].name));
 
     const grid = document.getElementById('order-item-grid');
+    const storeCount = Object.keys(storeItems).length;
+    if (storeCount === 0) {
+        grid.innerHTML = '<p class="no-data" style="grid-column:1/-1">No items are currently available in the store.</p>';
+        return;
+    }
     if (entries.length === 0) {
         grid.innerHTML = '<p class="no-data" style="grid-column:1/-1">No items match your search.</p>';
         return;
