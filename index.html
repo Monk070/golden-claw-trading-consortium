@@ -1148,6 +1148,8 @@ let currentUser = null;
 let userRole = 'viewer';
 let userName = 'Adventurer';
 let characterName = '';    // set during first-time setup
+let actualRole = 'viewer'; // real role from DB
+let viewAsRole = null;     // admin "view as" override
 let customPrices = {};   // { item_key: price }
 let recipes = [];
 let recipeMaterials = {}; // { recipe_id: [{ item_key, quantity }] }
@@ -1160,17 +1162,27 @@ let cart = {};            // { item_key: quantity }
 // ================================================================
 //  AUTH
 // ================================================================
-function isAdmin() { return userRole === 'admin'; }
-function canManage() { return ['admin','quartermaster'].includes(userRole); }
-function canUpdateOrders() { return ['admin','quartermaster','blacksmith'].includes(userRole); }
-function canViewAll() { return ['admin','quartermaster','blacksmith','member'].includes(userRole); }
-function canPlaceOrders() { return ['admin','quartermaster','blacksmith','viewer'].includes(userRole); }
+function effectiveRole() { return viewAsRole || userRole; }
+function isActualAdmin() { return actualRole === 'admin'; }
+function isAdmin() { return effectiveRole() === 'admin'; }
+function canManage() { return ['admin','quartermaster'].includes(effectiveRole()); }
+function canUpdateOrders() { return ['admin','quartermaster','blacksmith'].includes(effectiveRole()); }
+function canViewAll() { return ['admin','quartermaster','blacksmith','member'].includes(effectiveRole()); }
+function canPlaceOrders() { return ['admin','quartermaster','blacksmith','viewer'].includes(effectiveRole()); }
+
+function setViewAs(role) {
+    viewAsRole = role === 'admin' ? null : role;
+    userRole = viewAsRole || actualRole;
+    updateAuthUI();
+    renderAll();
+}
 
 async function loadUserRole() {
-    if (!currentUser) { userRole = 'viewer'; userName = 'Adventurer'; characterName = ''; return; }
+    if (!currentUser) { userRole = 'viewer'; actualRole = 'viewer'; userName = 'Adventurer'; characterName = ''; return; }
     const { data, error } = await sb.from('profiles').select('role, display_name, avatar_url, character_name').eq('id', currentUser.id).single();
     if (data) {
-        userRole = data.role || 'viewer';
+        actualRole = data.role || 'viewer';
+        userRole = viewAsRole || actualRole;
         userName = data.display_name || 'Adventurer';
         characterName = data.character_name || '';
     }
@@ -1186,10 +1198,20 @@ function updateAuthUI() {
     if (currentUser && characterName) {
         // Fully set up — show the app
         const displayLabel = `${characterName} (${userName})`;
-        const roleLabel = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+        const eff = effectiveRole();
+        const roleLabel = eff.charAt(0).toUpperCase() + eff.slice(1);
+        const viewAsHtml = isActualAdmin() ? `
+            <select onchange="setViewAs(this.value)" style="font-family:'Cinzel',serif;font-size:0.8em;padding:3px 8px;border:1px solid var(--gold-dark);background:rgba(44,24,16,0.8);color:var(--parchment);border-radius:3px;">
+                <option value="admin" ${!viewAsRole ? 'selected' : ''}>Admin</option>
+                <option value="quartermaster" ${viewAsRole==='quartermaster' ? 'selected' : ''}>Quartermaster</option>
+                <option value="blacksmith" ${viewAsRole==='blacksmith' ? 'selected' : ''}>Blacksmith</option>
+                <option value="member" ${viewAsRole==='member' ? 'selected' : ''}>Member</option>
+                <option value="viewer" ${viewAsRole==='viewer' ? 'selected' : ''}>Viewer</option>
+            </select>` : '';
         bar.innerHTML = `
             <span class="auth-name">${displayLabel}</span>
-            <span class="badge badge-${userRole}">${roleLabel}</span>
+            <span class="badge badge-${eff}">${roleLabel}${viewAsRole ? ' (preview)' : ''}</span>
+            ${viewAsHtml}
             <button onclick="signOut()">Sign Out</button>
         `;
         loginGate.style.display = 'none';
@@ -1249,6 +1271,8 @@ async function signOut() {
     await sb.auth.signOut();
     currentUser = null;
     userRole = 'viewer';
+    actualRole = 'viewer';
+    viewAsRole = null;
     userName = 'Adventurer';
     characterName = '';
     cart = {};
