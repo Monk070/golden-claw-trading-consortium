@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Claw Trading Consortium</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+        :root {
+            --parchment: #f4e4c1;
+            --parchment-dark: #d4c4a1;
+            --parchment-light: #faf3e3;
+            --ink: #2c1810;
+            --ink-light: #5c4033;
+            --gold: #c9a84c;
+            --gold-dark: #8b6914;
+            --blood: #8b1a1a;
+            --steel: #708090;
+            --forge-orange: #c45e1a;
+            --forge-glow: #ff9944;
+            --success: #2e6b2e;
+            --info: #2e4a6b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background: #1a1a1a;
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 20px;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            text-align: center;
+            padding: 35px 20px 15px;
+            background: linear-gradient(180deg, #1a1a1a 0%, #2c1810 100%);
+            border-bottom: 3px solid var(--gold);
+        }
+
+        header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.4em;
+            color: var(--gold);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            margin-bottom: 4px;
+            letter-spacing: 2px;
+        }
+
+        header .subtitle {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.15em;
+            color: var(--parchment-dark);
+            font-weight: normal;
+            margin-bottom: 15px;
+        }
+
+        /* ===== AUTH BAR ===== */
+        .auth-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            font-size: 0.9em;
+            color: var(--parchment-dark);
+        }
+
+        .auth-bar img {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--gold);
+        }
+
+        .auth-bar .auth-name {
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+        }
+
+        .auth-bar .auth-role {
+            font-size: 0.85em;
+            color: var(--parchment-dark);
+            opacity: 0.8;
+        }
+
+        .auth-bar button {
+            font-size: 0.8em;
+            padding: 4px 14px;
+        }
+
+        .btn-discord {
+            background: #5865F2 !important;
+            color: white !important;
+            border-color: #4752C4 !important;
+        }
+
+        .btn-discord:hover {
+            background: #4752C4 !important;
+        }
+
+        /* ===== MAIN TABS ===== */
+        .main-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .main-tab {
+            font-family: 'Cinzel', serif;
+            padding: 9px 20px;
+            background: rgba(44, 24, 16, 0.8);
+            color: var(--parchment-dark);
+            border: 2px solid var(--gold-dark);
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            margin: 0 2px;
+        }
+
+        .main-tab:hover {
+            color: var(--gold);
+            background: rgba(44, 24, 16, 1);
+        }
+
+        .main-tab.active {
+            background: var(--parchment);
+            color: var(--ink);
+            border-color: var(--gold);
+            position: relative;
+        }
+
+        .main-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0; right: 0;
+            height: 4px;
+            background: var(--parchment);
+        }
+
+        /* ===== CONTENT AREA ===== */
+        .content-area {
+            background: var(--parchment);
+            border: 2px solid var(--gold);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 25px;
+            min-height: 500px;
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ===== SECTION TITLES ===== */
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5em;
+            color: var(--ink);
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+
+        .section-subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1em;
+            color: var(--ink-light);
+            margin: 15px 0 10px;
+        }
+
+        /* ===== BUTTONS ===== */
+        button, .btn {
+            font-family: 'Cinzel', serif;
+            padding: 8px 16px;
+            border: 2px solid var(--gold-dark);
+            background: linear-gradient(180deg, var(--parchment) 0%, var(--parchment-dark) 100%);
+            color: var(--ink);
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        button:hover, .btn:hover {
+            background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: white;
+            border-color: var(--gold-dark);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(180deg, var(--forge-orange) 0%, #963f0a 100%);
+        }
+
+        .btn-danger {
+            border-color: var(--blood);
+            color: var(--blood);
+        }
+
+        .btn-danger:hover {
+            background: var(--blood);
+            color: white;
+        }
+
+        .btn-success {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .btn-success:hover {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.78em;
+        }
+
+        /* ===== TABLES ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        th {
+            font-family: 'Cinzel', serif;
+            background: var(--ink);
+            color: var(--gold);
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 0.85em;
+            font-weight: 400;
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--parchment-dark);
+            font-size: 0.95em;
+        }
+
+        tr:nth-child(even) { background: rgba(0,0,0,0.03); }
+        tr:hover { background: rgba(201,168,76,0.1); }
+
+        /* ===== FORMS ===== */
+        input, select, textarea {
+            font-family: 'Crimson Text', Georgia, serif;
+            padding: 8px 12px;
+            border: 1px solid var(--parchment-dark);
+            border-radius: 3px;
+            background: var(--parchment-light);
+            color: var(--ink);
+            font-size: 0.95em;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 3px rgba(201,168,76,0.4);
+        }
+
+        textarea { resize: vertical; min-height: 60px; }
+
+        label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.85em;
+            color: var(--ink-light);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .form-row .form-group { flex: 1; min-width: 200px; }
+
+        /* ===== CARDS ===== */
+        .card {
+            border: 1px solid var(--parchment-dark);
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: var(--parchment-light);
+            transition: box-shadow 0.2s;
+        }
+
+        .card:hover { box-shadow: 0 2px 8px rgba(44,24,16,0.1); }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1em;
+            color: var(--ink);
+        }
+
+        .card-actions { display: flex; gap: 6px; }
+
+        /* ===== BADGES ===== */
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.78em;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-pending { background: #f0d060; color: #5c4400; }
+        .badge-in_progress { background: #60a0f0; color: #003060; }
+        .badge-complete { background: #60c060; color: #004000; }
+        .badge-picked_up { background: #a0a0a0; color: #333; }
+        .badge-cancelled { background: #e06060; color: #400000; }
+
+        .badge-admin { background: var(--blood); color: white; }
+        .badge-quartermaster { background: var(--forge-orange); color: white; }
+        .badge-blacksmith { background: var(--steel); color: white; }
+        .badge-member { background: var(--success); color: white; }
+        .badge-viewer { background: var(--parchment-dark); color: var(--ink); }
+
+        /* ===== TOOLBAR ===== */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            width: 250px;
+        }
+
+        .filter-select {
+            min-width: 150px;
+        }
+
+        /* ===== CART ===== */
+        .cart-sidebar {
+            border: 2px solid var(--gold);
+            border-radius: 5px;
+            padding: 15px;
+            background: var(--parchment-light);
+            margin-top: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--parchment-dark);
+            font-size: 0.9em;
+        }
+
+        .cart-item:last-child { border-bottom: none; }
+
+        .cart-total {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2em;
+            color: var(--gold-dark);
+            text-align: right;
+            padding-top: 10px;
+            margin-top: 10px;
+            border-top: 2px solid var(--gold);
+        }
+
+        .cart-empty {
+            text-align: center;
+            color: var(--ink-light);
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .qty-control button {
+            padding: 2px 8px;
+            font-size: 0.8em;
+            min-width: 26px;
+        }
+
+        .qty-control span {
+            min-width: 24px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* ===== GRID LAYOUT ===== */
+        .order-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        @media (max-width: 800px) {
+            .order-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ===== ITEM GRID ===== */
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px;
+        }
+
+        .item-card {
+            border: 1px solid var(--parchment-dark);
+            border-radius: 4px;
+            padding: 10px 12px;
+            background: var(--parchment-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .item-card:hover {
+            border-color: var(--gold);
+            background: rgba(201,168,76,0.08);
+        }
+
+        .item-name { font-weight: 600; font-size: 0.92em; }
+        .item-price {
+            font-family: 'Cinzel', serif;
+            color: var(--gold-dark);
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--parchment);
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            padding: 25px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3em;
+            color: var(--ink);
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--gold);
+            padding-bottom: 8px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* ===== NOTIFICATIONS ===== */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: var(--ink);
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            font-family: 'Crimson Text', serif;
+            z-index: 2000;
+            animation: fadeInOut 3s forwards;
+            max-width: 350px;
+        }
+
+        .toast.error {
+            background: var(--blood);
+            color: white;
+            border-color: #c0392b;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            10% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* ===== EDITABLE PRICE ===== */
+        .editable-price {
+            cursor: pointer;
+            border-bottom: 1px dashed var(--gold);
+        }
+
+        .editable-price:hover {
+            color: var(--forge-orange);
+        }
+
+        .price-input {
+            width: 80px;
+            padding: 3px 6px;
+            font-size: 0.9em;
+            text-align: right;
+        }
+
+        /* ===== RECIPE MATERIALS LIST ===== */
+        .mat-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .mat-list li {
+            padding: 3px 0;
+            font-size: 0.92em;
+            color: var(--ink-light);
+        }
+
+        .mat-list li::before {
+            content: '\2022 ';
+            color: var(--gold);
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--parchment-dark);
+            font-family: 'MedievalSharp', cursive;
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+
+        /* ===== MISC ===== */
+        .gold { color: var(--gold-dark); }
+        .muted { color: var(--ink-light); font-size: 0.9em; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .mt-10 { margin-top: 10px; }
+        .mb-10 { margin-bottom: 10px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .gap-10 { gap: 10px; }
+        .hidden { display: none !important; }
+
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--ink-light);
+            font-style: italic;
+            font-size: 1.1em;
+        }
+
+        /* Category header in tables */
+        .cat-header td {
+            background: var(--ink);
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            padding: 6px 12px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header>
+    <h1>Golden Claw Trading Consortium</h1>
+    <p class="subtitle">Forged in Fire, Traded in Trust</p>
+    <div id="auth-bar" class="auth-bar">
+        <button class="btn-discord" onclick="signInDiscord()">Sign in with Discord</button>
+    </div>
+    <nav class="main-tabs" id="main-tabs">
+        <button class="main-tab active" data-tab="recipes">Recipes</button>
+        <button class="main-tab" data-tab="prices">Price List</button>
+        <button class="main-tab" data-tab="order">Place Order</button>
+        <button class="main-tab" data-tab="orders">Orders</button>
+        <button class="main-tab" data-tab="inventory">Inventory</button>
+        <button class="main-tab" data-tab="members">Members</button>
+    </nav>
+</header>
+
+<!-- ===================== MAIN CONTENT ===================== -->
+<div class="page-wrapper">
+<div class="content-area">
+
+    <!-- ============ RECIPES TAB ============ -->
+    <div class="tab-panel active" id="panel-recipes">
+        <div class="toolbar">
+            <h2 class="section-title" style="border:none;margin:0;padding:0;">Blacksmith Recipes</h2>
+            <div class="toolbar-right">
+                <button id="btn-add-recipe" class="btn-primary hidden" onclick="openRecipeModal()">+ Add Recipe</button>
+            </div>
+        </div>
+        <div id="recipes-list">
+            <p class="no-data">No recipes yet. An admin or quartermaster can add them.</p>
+        </div>
+    </div>
+
+    <!-- ============ PRICE LIST TAB ============ -->
+    <div class="tab-panel" id="panel-prices">
+        <div class="toolbar">
+            <h2 class="section-title" style="border:none;margin:0;padding:0;">Price List</h2>
+            <div class="toolbar-left">
+                <input type="text" class="search-input" id="price-search" placeholder="Search items..." oninput="renderPriceList()">
+                <select class="filter-select" id="price-cat-filter" onchange="renderPriceList()">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+        </div>
+        <p class="muted mb-10">Prices shown in gold. Admins and quartermasters can click a price to edit it.</p>
+        <div id="price-table-wrap"></div>
+    </div>
+
+    <!-- ============ PLACE ORDER TAB ============ -->
+    <div class="tab-panel" id="panel-order">
+        <h2 class="section-title">Place an Order</h2>
+        <div class="order-grid">
+            <div>
+                <div class="toolbar" style="margin-bottom:10px;">
+                    <input type="text" class="search-input" id="order-search" placeholder="Search items..." oninput="renderOrderItems()">
+                    <select class="filter-select" id="order-cat-filter" onchange="renderOrderItems()">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+                <div class="item-grid" id="order-item-grid"></div>
+            </div>
+            <div>
+                <div class="cart-sidebar" id="cart-sidebar">
+                    <h3 class="section-subtitle" style="margin-top:0;">Your Cart</h3>
+                    <div id="cart-items">
+                        <p class="cart-empty">Cart is empty. Click items to add.</p>
+                    </div>
+                    <div id="cart-total-wrap" class="hidden">
+                        <div class="cart-total">Total: <span id="cart-total">0</span> gold</div>
+                    </div>
+                    <div class="form-group mt-10">
+                        <label>Order Notes</label>
+                        <textarea id="order-notes" placeholder="Special instructions..."></textarea>
+                    </div>
+                    <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="submitOrder()" id="btn-submit-order" disabled>Submit Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ ORDERS TAB ============ -->
+    <div class="tab-panel" id="panel-orders">
+        <div class="toolbar">
+            <h2 class="section-title" style="border:none;margin:0;padding:0;">Orders</h2>
+            <div class="toolbar-left">
+                <select class="filter-select" id="order-status-filter" onchange="renderOrders()">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="complete">Complete</option>
+                    <option value="picked_up">Picked Up</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+        </div>
+        <div id="orders-list">
+            <p class="no-data">No orders yet.</p>
+        </div>
+    </div>
+
+    <!-- ============ INVENTORY TAB ============ -->
+    <div class="tab-panel" id="panel-inventory">
+        <div class="toolbar">
+            <h2 class="section-title" style="border:none;margin:0;padding:0;">Inventory Stock Ledger</h2>
+            <div class="toolbar-left">
+                <input type="text" class="search-input" id="inv-search" placeholder="Search materials..." oninput="renderInventory()">
+                <select class="filter-select" id="inv-cat-filter" onchange="renderInventory()">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            <div class="toolbar-right">
+                <button id="btn-add-inv" class="btn-primary hidden" onclick="openInventoryModal()">+ Add Stock</button>
+            </div>
+        </div>
+        <div id="inventory-table-wrap">
+            <p class="no-data">No inventory records. Log in as admin or quartermaster to add stock.</p>
+        </div>
+    </div>
+
+    <!-- ============ MEMBERS TAB ============ -->
+    <div class="tab-panel" id="panel-members">
+        <div class="toolbar">
+            <h2 class="section-title" style="border:none;margin:0;padding:0;">Clan Members</h2>
+            <div class="toolbar-right">
+                <button id="btn-add-member" class="btn-primary hidden" onclick="openMemberModal()">+ Add Member</button>
+            </div>
+        </div>
+        <div id="members-table-wrap">
+            <p class="no-data">No members yet. An admin can add clan members.</p>
+        </div>
+    </div>
+
+</div><!-- /content-area -->
+</div><!-- /page-wrapper -->
+
+<footer>Forged in fire, traded in trust. &mdash; Golden Claw Trading Consortium</footer>
+
+<!-- ===================== MODAL ===================== -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- ===================== SCRIPTS ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ================================================================
+//  CONFIGURATION — Replace these with your Supabase project values
+// ================================================================
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ================================================================
+//  ITEM DATABASE — Comprehensive Skyrim item list
+// ================================================================
+const ALL_ITEMS = (() => {
+    const items = {};
+
+    // --- Material tiers ---
+    const mats = [
+        { n: 'Iron', m: 1 }, { n: 'Steel', m: 2 }, { n: 'Orcish', m: 3 },
+        { n: 'Dwarven', m: 4 }, { n: 'Elven', m: 5 }, { n: 'Glass', m: 7 },
+        { n: 'Ebony', m: 10 }, { n: 'Daedric', m: 15 }, { n: 'Dragonbone', m: 18 },
+        { n: 'Stalhrim', m: 14 }, { n: 'Nordic', m: 6 }
+    ];
+
+    const weaponTypes = [
+        { n: 'Sword', b: 25 }, { n: 'Greatsword', b: 45 }, { n: 'War Axe', b: 30 },
+        { n: 'Battleaxe', b: 50 }, { n: 'Mace', b: 35 }, { n: 'Warhammer', b: 55 },
+        { n: 'Dagger', b: 10 }, { n: 'Bow', b: 30 }
+    ];
+
+    // Generate weapons
+    mats.forEach(mat => {
+        weaponTypes.forEach(w => {
+            const key = `${mat.n.toLowerCase()}_${w.n.toLowerCase().replace(/ /g,'_')}`;
+            items[key] = { name: `${mat.n} ${w.n}`, category: 'Weapons', defaultPrice: Math.round(w.b * mat.m) };
+        });
+    });
+
+    // Arrows
+    mats.forEach(mat => {
+        const key = `${mat.n.toLowerCase()}_arrow`;
+        items[key] = { name: `${mat.n} Arrow (20)`, category: 'Ammunition', defaultPrice: Math.round(2 * mat.m) };
+    });
+
+    // --- Armor ---
+    const heavyMats = [
+        { n: 'Iron', m: 1 }, { n: 'Steel', m: 2 }, { n: 'Steel Plate', m: 3 },
+        { n: 'Orcish', m: 4 }, { n: 'Dwarven', m: 5 }, { n: 'Ebony', m: 10 },
+        { n: 'Daedric', m: 16 }, { n: 'Dragonplate', m: 18 }
+    ];
+    const lightMats = [
+        { n: 'Hide', m: 1 }, { n: 'Leather', m: 1.5 }, { n: 'Elven', m: 5 },
+        { n: 'Scaled', m: 4 }, { n: 'Glass', m: 8 }, { n: 'Dragonscale', m: 17 },
+        { n: 'Stalhrim Light', m: 14 }
+    ];
+    const armorPieces = [
+        { n: 'Helmet', b: 20 }, { n: 'Armor', b: 40 }, { n: 'Gauntlets', b: 15 },
+        { n: 'Boots', b: 15 }, { n: 'Shield', b: 25 }
+    ];
+
+    heavyMats.forEach(mat => {
+        armorPieces.forEach(a => {
+            const key = `${mat.n.toLowerCase().replace(/ /g,'_')}_${a.n.toLowerCase()}`;
+            items[key] = { name: `${mat.n} ${a.n}`, category: 'Heavy Armor', defaultPrice: Math.round(a.b * mat.m) };
+        });
+    });
+
+    lightMats.forEach(mat => {
+        armorPieces.forEach(a => {
+            const key = `${mat.n.toLowerCase().replace(/ /g,'_')}_${a.n.toLowerCase()}`;
+            items[key] = { name: `${mat.n} ${a.n}`, category: 'Light Armor', defaultPrice: Math.round(a.b * mat.m) };
+        });
+    });
+
+    // --- Clothing / Jewelry ---
+    const misc = {
+        'gold_ring': { name: 'Gold Ring', category: 'Jewelry', defaultPrice: 75 },
+        'gold_necklace': { name: 'Gold Necklace', category: 'Jewelry', defaultPrice: 120 },
+        'silver_ring': { name: 'Silver Ring', category: 'Jewelry', defaultPrice: 40 },
+        'silver_necklace': { name: 'Silver Necklace', category: 'Jewelry', defaultPrice: 60 },
+        'gold_diamond_ring': { name: 'Gold Diamond Ring', category: 'Jewelry', defaultPrice: 300 },
+        'gold_emerald_necklace': { name: 'Gold Emerald Necklace', category: 'Jewelry', defaultPrice: 450 },
+        'gold_ruby_necklace': { name: 'Gold Ruby Necklace', category: 'Jewelry', defaultPrice: 400 },
+        'gold_sapphire_ring': { name: 'Gold Sapphire Ring', category: 'Jewelry', defaultPrice: 350 },
+        'silver_amethyst_ring': { name: 'Silver Amethyst Ring', category: 'Jewelry', defaultPrice: 100 },
+        'circlet_gold': { name: 'Gold Circlet', category: 'Jewelry', defaultPrice: 200 },
+        'circlet_copper_ruby': { name: 'Copper & Ruby Circlet', category: 'Jewelry', defaultPrice: 250 },
+
+        // --- Potions ---
+        'minor_healing': { name: 'Minor Healing Potion', category: 'Potions', defaultPrice: 12 },
+        'healing_potion': { name: 'Healing Potion', category: 'Potions', defaultPrice: 36 },
+        'plentiful_healing': { name: 'Plentiful Healing Potion', category: 'Potions', defaultPrice: 72 },
+        'vigorous_healing': { name: 'Vigorous Healing Potion', category: 'Potions', defaultPrice: 140 },
+        'extreme_healing': { name: 'Extreme Healing Potion', category: 'Potions', defaultPrice: 275 },
+        'ultimate_healing': { name: 'Ultimate Healing Potion', category: 'Potions', defaultPrice: 440 },
+        'minor_magicka': { name: 'Minor Magicka Potion', category: 'Potions', defaultPrice: 12 },
+        'magicka_potion': { name: 'Magicka Potion', category: 'Potions', defaultPrice: 36 },
+        'plentiful_magicka': { name: 'Plentiful Magicka Potion', category: 'Potions', defaultPrice: 72 },
+        'vigorous_magicka': { name: 'Vigorous Magicka Potion', category: 'Potions', defaultPrice: 140 },
+        'extreme_magicka': { name: 'Extreme Magicka Potion', category: 'Potions', defaultPrice: 275 },
+        'ultimate_magicka': { name: 'Ultimate Magicka Potion', category: 'Potions', defaultPrice: 440 },
+        'minor_stamina': { name: 'Minor Stamina Potion', category: 'Potions', defaultPrice: 12 },
+        'stamina_potion': { name: 'Stamina Potion', category: 'Potions', defaultPrice: 36 },
+        'plentiful_stamina': { name: 'Plentiful Stamina Potion', category: 'Potions', defaultPrice: 72 },
+        'vigorous_stamina': { name: 'Vigorous Stamina Potion', category: 'Potions', defaultPrice: 140 },
+        'cure_disease': { name: 'Cure Disease Potion', category: 'Potions', defaultPrice: 50 },
+        'cure_poison': { name: 'Cure Poison', category: 'Potions', defaultPrice: 42 },
+        'potion_invisibility': { name: 'Potion of Invisibility', category: 'Potions', defaultPrice: 260 },
+        'potion_fire_resist': { name: 'Potion of Fire Resistance', category: 'Potions', defaultPrice: 90 },
+        'potion_frost_resist': { name: 'Potion of Frost Resistance', category: 'Potions', defaultPrice: 90 },
+        'potion_shock_resist': { name: 'Potion of Shock Resistance', category: 'Potions', defaultPrice: 90 },
+        'potion_fortify_smithing': { name: 'Potion of Fortify Smithing', category: 'Potions', defaultPrice: 120 },
+        'potion_fortify_enchanting': { name: 'Potion of Fortify Enchanting', category: 'Potions', defaultPrice: 120 },
+        'philter_one_handed': { name: 'Philter of the Warrior', category: 'Potions', defaultPrice: 150 },
+        'philter_marksman': { name: 'Philter of the Knight', category: 'Potions', defaultPrice: 150 },
+
+        // --- Poisons ---
+        'frenzy_poison': { name: 'Frenzy Poison', category: 'Poisons', defaultPrice: 85 },
+        'paralysis_poison': { name: 'Paralysis Poison', category: 'Poisons', defaultPrice: 280 },
+        'damage_health_poison': { name: 'Damage Health Poison', category: 'Poisons', defaultPrice: 55 },
+        'lingering_damage_poison': { name: 'Lingering Damage Health Poison', category: 'Poisons', defaultPrice: 100 },
+        'weakness_poison': { name: 'Weakness to Magic Poison', category: 'Poisons', defaultPrice: 70 },
+        'slow_poison': { name: 'Slow Poison', category: 'Poisons', defaultPrice: 60 },
+
+        // --- Alchemy Ingredients ---
+        'blue_mountain_flower': { name: 'Blue Mountain Flower', category: 'Alchemy Ingredients', defaultPrice: 2 },
+        'red_mountain_flower': { name: 'Red Mountain Flower', category: 'Alchemy Ingredients', defaultPrice: 2 },
+        'purple_mountain_flower': { name: 'Purple Mountain Flower', category: 'Alchemy Ingredients', defaultPrice: 2 },
+        'yellow_mountain_flower': { name: 'Yellow Mountain Flower', category: 'Alchemy Ingredients', defaultPrice: 2 },
+        'lavender': { name: 'Lavender', category: 'Alchemy Ingredients', defaultPrice: 1 },
+        'wheat': { name: 'Wheat', category: 'Alchemy Ingredients', defaultPrice: 5 },
+        'nightshade': { name: 'Nightshade', category: 'Alchemy Ingredients', defaultPrice: 8 },
+        'deathbell': { name: 'Deathbell', category: 'Alchemy Ingredients', defaultPrice: 4 },
+        'nirnroot': { name: 'Nirnroot', category: 'Alchemy Ingredients', defaultPrice: 10 },
+        'crimson_nirnroot': { name: 'Crimson Nirnroot', category: 'Alchemy Ingredients', defaultPrice: 10 },
+        'giants_toe': { name: "Giant's Toe", category: 'Alchemy Ingredients', defaultPrice: 20 },
+        'daedra_heart': { name: 'Daedra Heart', category: 'Alchemy Ingredients', defaultPrice: 250 },
+        'briar_heart': { name: 'Briar Heart', category: 'Alchemy Ingredients', defaultPrice: 20 },
+        'fire_salts': { name: 'Fire Salts', category: 'Alchemy Ingredients', defaultPrice: 50 },
+        'frost_salts': { name: 'Frost Salts', category: 'Alchemy Ingredients', defaultPrice: 40 },
+        'void_salts': { name: 'Void Salts', category: 'Alchemy Ingredients', defaultPrice: 50 },
+        'moon_sugar': { name: 'Moon Sugar', category: 'Alchemy Ingredients', defaultPrice: 50 },
+        'skooma_ingredient': { name: 'Skooma', category: 'Alchemy Ingredients', defaultPrice: 25 },
+        'tundra_cotton': { name: 'Tundra Cotton', category: 'Alchemy Ingredients', defaultPrice: 1 },
+        'creep_cluster': { name: 'Creep Cluster', category: 'Alchemy Ingredients', defaultPrice: 1 },
+        'mora_tapinella': { name: 'Mora Tapinella', category: 'Alchemy Ingredients', defaultPrice: 4 },
+        'scaly_pholiota': { name: 'Scaly Pholiota', category: 'Alchemy Ingredients', defaultPrice: 4 },
+        'canis_root': { name: 'Canis Root', category: 'Alchemy Ingredients', defaultPrice: 5 },
+        'imp_stool': { name: 'Imp Stool', category: 'Alchemy Ingredients', defaultPrice: 2 },
+        'human_heart': { name: 'Human Heart', category: 'Alchemy Ingredients', defaultPrice: 0 },
+        'bone_meal': { name: 'Bone Meal', category: 'Alchemy Ingredients', defaultPrice: 5 },
+        'ectoplasm': { name: 'Ectoplasm', category: 'Alchemy Ingredients', defaultPrice: 25 },
+
+        // --- Food & Beverages ---
+        'bread': { name: 'Bread', category: 'Food & Drink', defaultPrice: 2 },
+        'sweet_roll': { name: 'Sweet Roll', category: 'Food & Drink', defaultPrice: 2 },
+        'cheese_wheel': { name: 'Cheese Wheel', category: 'Food & Drink', defaultPrice: 10 },
+        'cheese_wedge': { name: 'Cheese Wedge', category: 'Food & Drink', defaultPrice: 3 },
+        'cabbage': { name: 'Cabbage', category: 'Food & Drink', defaultPrice: 1 },
+        'potato': { name: 'Potato', category: 'Food & Drink', defaultPrice: 1 },
+        'leek': { name: 'Leek', category: 'Food & Drink', defaultPrice: 1 },
+        'tomato': { name: 'Tomato', category: 'Food & Drink', defaultPrice: 1 },
+        'apple': { name: 'Apple', category: 'Food & Drink', defaultPrice: 2 },
+        'raw_beef': { name: 'Raw Beef', category: 'Food & Drink', defaultPrice: 2 },
+        'cooked_beef': { name: 'Cooked Beef', category: 'Food & Drink', defaultPrice: 3 },
+        'venison': { name: 'Venison', category: 'Food & Drink', defaultPrice: 4 },
+        'rabbit_haunch': { name: 'Rabbit Haunch', category: 'Food & Drink', defaultPrice: 3 },
+        'salmon_steak': { name: 'Salmon Steak', category: 'Food & Drink', defaultPrice: 3 },
+        'grilled_leeks': { name: 'Grilled Leeks', category: 'Food & Drink', defaultPrice: 2 },
+        'ale': { name: 'Ale', category: 'Food & Drink', defaultPrice: 5 },
+        'nord_mead': { name: 'Nord Mead', category: 'Food & Drink', defaultPrice: 5 },
+        'honningbrew_mead': { name: 'Honningbrew Mead', category: 'Food & Drink', defaultPrice: 12 },
+        'blackbriar_mead': { name: 'Black-Briar Mead', category: 'Food & Drink', defaultPrice: 12 },
+        'alto_wine': { name: 'Alto Wine', category: 'Food & Drink', defaultPrice: 12 },
+        'spiced_wine': { name: 'Spiced Wine', category: 'Food & Drink', defaultPrice: 12 },
+        'wine': { name: 'Wine', category: 'Food & Drink', defaultPrice: 7 },
+        'skooma_drink': { name: 'Skooma', category: 'Food & Drink', defaultPrice: 25 },
+        'elsweyr_fondue': { name: 'Elsweyr Fondue', category: 'Food & Drink', defaultPrice: 8 },
+
+        // --- Soul Gems ---
+        'petty_soul_gem': { name: 'Petty Soul Gem (Empty)', category: 'Soul Gems', defaultPrice: 10 },
+        'petty_soul_gem_filled': { name: 'Petty Soul Gem (Filled)', category: 'Soul Gems', defaultPrice: 20 },
+        'lesser_soul_gem': { name: 'Lesser Soul Gem (Empty)', category: 'Soul Gems', defaultPrice: 25 },
+        'lesser_soul_gem_filled': { name: 'Lesser Soul Gem (Filled)', category: 'Soul Gems', defaultPrice: 50 },
+        'common_soul_gem': { name: 'Common Soul Gem (Empty)', category: 'Soul Gems', defaultPrice: 50 },
+        'common_soul_gem_filled': { name: 'Common Soul Gem (Filled)', category: 'Soul Gems', defaultPrice: 100 },
+        'greater_soul_gem': { name: 'Greater Soul Gem (Empty)', category: 'Soul Gems', defaultPrice: 100 },
+        'greater_soul_gem_filled': { name: 'Greater Soul Gem (Filled)', category: 'Soul Gems', defaultPrice: 200 },
+        'grand_soul_gem': { name: 'Grand Soul Gem (Empty)', category: 'Soul Gems', defaultPrice: 150 },
+        'grand_soul_gem_filled': { name: 'Grand Soul Gem (Filled)', category: 'Soul Gems', defaultPrice: 500 },
+        'black_soul_gem': { name: 'Black Soul Gem (Empty)', category: 'Soul Gems', defaultPrice: 200 },
+        'black_soul_gem_filled': { name: 'Black Soul Gem (Filled)', category: 'Soul Gems', defaultPrice: 600 },
+        'azuras_star': { name: "Azura's Star", category: 'Soul Gems', defaultPrice: 1000 },
+
+        // --- Smithing Materials ---
+        'iron_ingot': { name: 'Iron Ingot', category: 'Smithing Materials', defaultPrice: 7 },
+        'iron_ore': { name: 'Iron Ore', category: 'Smithing Materials', defaultPrice: 4 },
+        'steel_ingot': { name: 'Steel Ingot', category: 'Smithing Materials', defaultPrice: 10 },
+        'corundum_ingot': { name: 'Corundum Ingot', category: 'Smithing Materials', defaultPrice: 15 },
+        'corundum_ore': { name: 'Corundum Ore', category: 'Smithing Materials', defaultPrice: 10 },
+        'orichalcum_ingot': { name: 'Orichalcum Ingot', category: 'Smithing Materials', defaultPrice: 25 },
+        'orichalcum_ore': { name: 'Orichalcum Ore', category: 'Smithing Materials', defaultPrice: 15 },
+        'dwarven_ingot': { name: 'Dwarven Metal Ingot', category: 'Smithing Materials', defaultPrice: 30 },
+        'moonstone_ingot': { name: 'Refined Moonstone', category: 'Smithing Materials', defaultPrice: 50 },
+        'moonstone_ore': { name: 'Moonstone Ore', category: 'Smithing Materials', defaultPrice: 30 },
+        'quicksilver_ingot': { name: 'Quicksilver Ingot', category: 'Smithing Materials', defaultPrice: 25 },
+        'quicksilver_ore': { name: 'Quicksilver Ore', category: 'Smithing Materials', defaultPrice: 15 },
+        'malachite_ingot': { name: 'Refined Malachite', category: 'Smithing Materials', defaultPrice: 75 },
+        'malachite_ore': { name: 'Malachite Ore', category: 'Smithing Materials', defaultPrice: 30 },
+        'ebony_ingot': { name: 'Ebony Ingot', category: 'Smithing Materials', defaultPrice: 100 },
+        'ebony_ore': { name: 'Ebony Ore', category: 'Smithing Materials', defaultPrice: 60 },
+        'gold_ingot': { name: 'Gold Ingot', category: 'Smithing Materials', defaultPrice: 75 },
+        'gold_ore': { name: 'Gold Ore', category: 'Smithing Materials', defaultPrice: 50 },
+        'silver_ingot': { name: 'Silver Ingot', category: 'Smithing Materials', defaultPrice: 50 },
+        'silver_ore': { name: 'Silver Ore', category: 'Smithing Materials', defaultPrice: 25 },
+        'leather': { name: 'Leather', category: 'Smithing Materials', defaultPrice: 10 },
+        'leather_strips': { name: 'Leather Strips', category: 'Smithing Materials', defaultPrice: 3 },
+        'dragon_bone': { name: 'Dragon Bone', category: 'Smithing Materials', defaultPrice: 500 },
+        'dragon_scales': { name: 'Dragon Scales', category: 'Smithing Materials', defaultPrice: 250 },
+        'daedra_heart_mat': { name: 'Daedra Heart (Smithing)', category: 'Smithing Materials', defaultPrice: 250 },
+        'firewood': { name: 'Firewood', category: 'Smithing Materials', defaultPrice: 2 },
+        'charcoal': { name: 'Charcoal', category: 'Smithing Materials', defaultPrice: 5 },
+        'stalhrim_mat': { name: 'Stalhrim', category: 'Smithing Materials', defaultPrice: 200 },
+        'nails': { name: 'Nails', category: 'Smithing Materials', defaultPrice: 1 },
+        'iron_fittings': { name: 'Iron Fittings', category: 'Smithing Materials', defaultPrice: 5 },
+        'hinge': { name: 'Hinge', category: 'Smithing Materials', defaultPrice: 4 },
+        'lock': { name: 'Lock', category: 'Smithing Materials', defaultPrice: 10 },
+
+        // --- Gems ---
+        'diamond': { name: 'Diamond', category: 'Gems', defaultPrice: 200 },
+        'ruby': { name: 'Ruby', category: 'Gems', defaultPrice: 100 },
+        'emerald': { name: 'Emerald', category: 'Gems', defaultPrice: 100 },
+        'sapphire_gem': { name: 'Sapphire', category: 'Gems', defaultPrice: 100 },
+        'amethyst': { name: 'Amethyst', category: 'Gems', defaultPrice: 60 },
+        'garnet': { name: 'Garnet', category: 'Gems', defaultPrice: 30 },
+        'flawless_diamond': { name: 'Flawless Diamond', category: 'Gems', defaultPrice: 500 },
+        'flawless_ruby': { name: 'Flawless Ruby', category: 'Gems', defaultPrice: 250 },
+        'flawless_emerald': { name: 'Flawless Emerald', category: 'Gems', defaultPrice: 250 },
+        'flawless_sapphire': { name: 'Flawless Sapphire', category: 'Gems', defaultPrice: 250 },
+        'flawless_amethyst': { name: 'Flawless Amethyst', category: 'Gems', defaultPrice: 120 },
+        'flawless_garnet': { name: 'Flawless Garnet', category: 'Gems', defaultPrice: 60 },
+
+        // --- Enchanted / Scrolls ---
+        'scroll_fireball': { name: 'Scroll of Fireball', category: 'Scrolls', defaultPrice: 45 },
+        'scroll_ice_storm': { name: 'Scroll of Ice Storm', category: 'Scrolls', defaultPrice: 45 },
+        'scroll_lightning_bolt': { name: 'Scroll of Lightning Bolt', category: 'Scrolls', defaultPrice: 30 },
+        'scroll_conjure_flame_atronach': { name: 'Scroll of Conjure Flame Atronach', category: 'Scrolls', defaultPrice: 60 },
+        'scroll_turn_undead': { name: 'Scroll of Turn Undead', category: 'Scrolls', defaultPrice: 25 },
+        'scroll_soul_trap': { name: 'Scroll of Soul Trap', category: 'Scrolls', defaultPrice: 50 },
+        'scroll_calm': { name: 'Scroll of Calm', category: 'Scrolls', defaultPrice: 20 },
+        'scroll_blizzard': { name: 'Scroll of Blizzard', category: 'Scrolls', defaultPrice: 120 },
+
+        // --- Misc / Trade Goods ---
+        'linen_wrap': { name: 'Linen Wrap', category: 'Miscellaneous', defaultPrice: 5 },
+        'dwemer_cog': { name: 'Dwemer Cog', category: 'Miscellaneous', defaultPrice: 15 },
+        'dwemer_strut': { name: 'Dwemer Strut', category: 'Miscellaneous', defaultPrice: 15 },
+        'dwemer_scrap': { name: 'Dwemer Scrap Metal', category: 'Miscellaneous', defaultPrice: 10 },
+        'goat_horns': { name: 'Goat Horns', category: 'Miscellaneous', defaultPrice: 5 },
+        'mammoth_tusk': { name: 'Mammoth Tusk', category: 'Miscellaneous', defaultPrice: 150 },
+        'sabre_cat_pelt': { name: 'Sabre Cat Pelt', category: 'Miscellaneous', defaultPrice: 25 },
+        'bear_pelt': { name: 'Bear Pelt', category: 'Miscellaneous', defaultPrice: 50 },
+        'wolf_pelt': { name: 'Wolf Pelt', category: 'Miscellaneous', defaultPrice: 10 },
+        'deer_hide': { name: 'Deer Hide', category: 'Miscellaneous', defaultPrice: 10 },
+        'lockpick': { name: 'Lockpick', category: 'Miscellaneous', defaultPrice: 3 },
+        'torch': { name: 'Torch', category: 'Miscellaneous', defaultPrice: 1 },
+        'lantern': { name: 'Lantern', category: 'Miscellaneous', defaultPrice: 5 },
+    };
+
+    Object.assign(items, misc);
+    return items;
+})();
+
+// Build category list
+const CATEGORIES = [...new Set(Object.values(ALL_ITEMS).map(i => i.category))].sort();
+
+// ================================================================
+//  STATE
+// ================================================================
+let currentUser = null;
+let userRole = 'viewer';
+let userName = 'Adventurer';
+let customPrices = {};   // { item_key: price }
+let recipes = [];
+let recipeMaterials = {}; // { recipe_id: [{ item_key, quantity }] }
+let orders = [];
+let orderItems = {};     // { order_id: [{ item_key, item_name, quantity, unit_price }] }
+let inventory = [];
+let members = [];
+let cart = {};            // { item_key: quantity }
+
+// ================================================================
+//  AUTH
+// ================================================================
+function canManage() { return ['admin','quartermaster'].includes(userRole); }
+function canUpdateOrders() { return ['admin','quartermaster','blacksmith'].includes(userRole); }
+function isAdmin() { return userRole === 'admin'; }
+
+async function loadUserRole() {
+    if (!currentUser) { userRole = 'viewer'; userName = 'Adventurer'; return; }
+    const { data, error } = await sb.from('profiles').select('role, display_name, avatar_url').eq('id', currentUser.id).single();
+    if (data) {
+        userRole = data.role || 'viewer';
+        userName = data.display_name || 'Adventurer';
+    }
+}
+
+function updateAuthUI() {
+    const bar = document.getElementById('auth-bar');
+    if (currentUser) {
+        const roleLabel = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+        bar.innerHTML = `
+            <span class="auth-name">${userName}</span>
+            <span class="badge badge-${userRole}">${roleLabel}</span>
+            <button onclick="signOut()">Sign Out</button>
+        `;
+    } else {
+        bar.innerHTML = `<button class="btn-discord" onclick="signInDiscord()">Sign in with Discord</button>`;
+    }
+    // Show/hide admin buttons
+    document.getElementById('btn-add-recipe').classList.toggle('hidden', !canManage());
+    document.getElementById('btn-add-inv').classList.toggle('hidden', !canManage());
+    document.getElementById('btn-add-member').classList.toggle('hidden', !isAdmin());
+    document.getElementById('btn-submit-order').disabled = !currentUser;
+}
+
+async function signInDiscord() {
+    const { error } = await sb.auth.signInWithOAuth({
+        provider: 'discord',
+        options: { redirectTo: window.location.origin + window.location.pathname }
+    });
+    if (error) notify(error.message, true);
+}
+
+async function signOut() {
+    await sb.auth.signOut();
+    currentUser = null;
+    userRole = 'viewer';
+    userName = 'Adventurer';
+    cart = {};
+    updateAuthUI();
+    renderAll();
+}
+
+// ================================================================
+//  DATA LOADING
+// ================================================================
+async function loadCustomPrices() {
+    const { data } = await sb.from('custom_prices').select('*');
+    customPrices = {};
+    (data || []).forEach(r => { customPrices[r.item_key] = r.custom_price; });
+}
+
+async function loadRecipes() {
+    const { data } = await sb.from('recipes').select('*').order('name');
+    recipes = data || [];
+    const { data: mats } = await sb.from('recipe_materials').select('*');
+    recipeMaterials = {};
+    (mats || []).forEach(m => {
+        if (!recipeMaterials[m.recipe_id]) recipeMaterials[m.recipe_id] = [];
+        recipeMaterials[m.recipe_id].push(m);
+    });
+}
+
+async function loadOrders() {
+    const { data } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+    orders = data || [];
+    const { data: items } = await sb.from('order_items').select('*');
+    orderItems = {};
+    (items || []).forEach(i => {
+        if (!orderItems[i.order_id]) orderItems[i.order_id] = [];
+        orderItems[i.order_id].push(i);
+    });
+}
+
+async function loadInventory() {
+    const { data } = await sb.from('inventory').select('*').order('category').order('item_name');
+    inventory = data || [];
+}
+
+async function loadMembers() {
+    const { data } = await sb.from('members').select('*').order('rank').order('name');
+    members = data || [];
+}
+
+async function loadAllData() {
+    await Promise.all([
+        loadCustomPrices(),
+        loadRecipes(),
+        loadOrders(),
+        loadInventory(),
+        loadMembers()
+    ]);
+}
+
+// ================================================================
+//  HELPERS
+// ================================================================
+function getPrice(itemKey) {
+    if (customPrices[itemKey] !== undefined) return customPrices[itemKey];
+    return ALL_ITEMS[itemKey]?.defaultPrice || 0;
+}
+
+function getItemName(key) {
+    return ALL_ITEMS[key]?.name || key;
+}
+
+function formatGold(n) { return n.toLocaleString() + ' gold'; }
+
+function notify(msg, isError = false) {
+    const el = document.createElement('div');
+    el.className = 'toast' + (isError ? ' error' : '');
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+}
+
+function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('active');
+}
+
+function openModal(html) {
+    document.getElementById('modal-content').innerHTML = html;
+    document.getElementById('modal-overlay').classList.add('active');
+}
+
+function statusLabel(s) {
+    const labels = {
+        pending: 'Pending', in_progress: 'In Progress',
+        complete: 'Complete', picked_up: 'Picked Up', cancelled: 'Cancelled'
+    };
+    return labels[s] || s;
+}
+
+function timeAgo(dateStr) {
+    const d = new Date(dateStr);
+    const diff = Date.now() - d.getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    const days = Math.floor(hrs / 24);
+    return days + 'd ago';
+}
+
+// ================================================================
+//  TAB SWITCHING
+// ================================================================
+document.querySelectorAll('.main-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+});
+
+// ================================================================
+//  RENDER: RECIPES
+// ================================================================
+function renderRecipes() {
+    const wrap = document.getElementById('recipes-list');
+    if (recipes.length === 0) {
+        wrap.innerHTML = '<p class="no-data">No recipes yet. An admin or quartermaster can add them.</p>';
+        return;
+    }
+    let html = '';
+    recipes.forEach(r => {
+        const mats = recipeMaterials[r.id] || [];
+        let matHtml = '';
+        let matCost = 0;
+        mats.forEach(m => {
+            const price = getPrice(m.item_key);
+            matCost += price * m.quantity;
+            matHtml += `<li>${m.quantity}x ${getItemName(m.item_key)} <span class="muted">(${formatGold(price)} ea)</span></li>`;
+        });
+        const totalCost = matCost + (r.crafting_fee || 0);
+
+        html += `<div class="card">
+            <div class="card-header">
+                <span class="card-title">${r.name}</span>
+                <div class="card-actions">
+                    ${canManage() ? `<button class="btn-sm" onclick="editRecipe('${r.id}')">Edit</button>
+                    <button class="btn-sm btn-danger" onclick="deleteRecipe('${r.id}')">Delete</button>` : ''}
+                </div>
+            </div>
+            ${r.description ? `<p class="muted mb-10">${r.description}</p>` : ''}
+            <p class="section-subtitle">Required Materials:</p>
+            <ul class="mat-list">${matHtml || '<li class="muted">None specified</li>'}</ul>
+            <div class="flex-between mt-10">
+                <span class="muted">Material Cost: ${formatGold(matCost)} | Crafting Fee: ${formatGold(r.crafting_fee || 0)}</span>
+                <span class="gold" style="font-family:'Cinzel',serif;font-size:1.1em;">Total: ${formatGold(totalCost)}</span>
+            </div>
+        </div>`;
+    });
+    wrap.innerHTML = html;
+}
+
+function openRecipeModal(existingId) {
+    const existing = existingId ? recipes.find(r => r.id === existingId) : null;
+    const mats = existing ? (recipeMaterials[existing.id] || []) : [];
+
+    // Build item options
+    const itemOptions = Object.entries(ALL_ITEMS)
+        .sort((a,b) => a[1].name.localeCompare(b[1].name))
+        .map(([k,v]) => `<option value="${k}">${v.name} (${v.category})</option>`)
+        .join('');
+
+    let matsHtml = '';
+    mats.forEach((m, i) => {
+        matsHtml += `<div class="form-row" id="mat-row-${i}">
+            <div class="form-group"><select id="mat-key-${i}">${itemOptions}</select></div>
+            <div class="form-group" style="max-width:80px"><input type="number" id="mat-qty-${i}" value="${m.quantity}" min="1"></div>
+            <div class="form-group" style="max-width:40px;padding-top:8px"><button class="btn-sm btn-danger" onclick="document.getElementById('mat-row-${i}').remove()">X</button></div>
+        </div>`;
+    });
+
+    openModal(`
+        <h3 class="modal-title">${existing ? 'Edit' : 'Add'} Recipe</h3>
+        <div class="form-group">
+            <label>Recipe Name</label>
+            <input type="text" id="recipe-name" value="${existing?.name || ''}" style="width:100%">
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="recipe-desc" style="width:100%">${existing?.description || ''}</textarea>
+        </div>
+        <div class="form-group">
+            <label>Crafting Fee (gold)</label>
+            <input type="number" id="recipe-fee" value="${existing?.crafting_fee || 0}" min="0" style="width:120px">
+        </div>
+        <h4 class="section-subtitle">Materials</h4>
+        <div id="recipe-mats">${matsHtml}</div>
+        <button class="btn-sm mt-10" onclick="addMatRow()">+ Add Material</button>
+        <div class="modal-actions">
+            <button onclick="closeModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveRecipe('${existingId || ''}')">Save Recipe</button>
+        </div>
+    `);
+
+    // Set selected values for existing materials
+    mats.forEach((m, i) => {
+        const sel = document.getElementById('mat-key-' + i);
+        if (sel) sel.value = m.item_key;
+    });
+}
+
+let matRowCounter = 100;
+function addMatRow() {
+    const idx = matRowCounter++;
+    const itemOptions = Object.entries(ALL_ITEMS)
+        .sort((a,b) => a[1].name.localeCompare(b[1].name))
+        .map(([k,v]) => `<option value="${k}">${v.name} (${v.category})</option>`)
+        .join('');
+    const row = document.createElement('div');
+    row.className = 'form-row';
+    row.id = 'mat-row-' + idx;
+    row.innerHTML = `
+        <div class="form-group"><select id="mat-key-${idx}">${itemOptions}</select></div>
+        <div class="form-group" style="max-width:80px"><input type="number" id="mat-qty-${idx}" value="1" min="1"></div>
+        <div class="form-group" style="max-width:40px;padding-top:8px"><button class="btn-sm btn-danger" onclick="document.getElementById('mat-row-${idx}').remove()">X</button></div>
+    `;
+    document.getElementById('recipe-mats').appendChild(row);
+}
+
+async function saveRecipe(existingId) {
+    const name = document.getElementById('recipe-name').value.trim();
+    if (!name) { notify('Recipe name is required.', true); return; }
+    const desc = document.getElementById('recipe-desc').value.trim();
+    const fee = parseInt(document.getElementById('recipe-fee').value) || 0;
+
+    // Gather materials
+    const matRows = document.getElementById('recipe-mats').querySelectorAll('.form-row');
+    const materials = [];
+    matRows.forEach(row => {
+        const id = row.id.replace('mat-row-', '');
+        const key = document.getElementById('mat-key-' + id)?.value;
+        const qty = parseInt(document.getElementById('mat-qty-' + id)?.value) || 1;
+        if (key) materials.push({ item_key: key, quantity: qty });
+    });
+
+    if (existingId) {
+        const { error } = await sb.from('recipes').update({ name, description: desc, crafting_fee: fee }).eq('id', existingId);
+        if (error) { notify(error.message, true); return; }
+        await sb.from('recipe_materials').delete().eq('recipe_id', existingId);
+        if (materials.length) {
+            await sb.from('recipe_materials').insert(materials.map(m => ({ ...m, recipe_id: existingId })));
+        }
+    } else {
+        const { data, error } = await sb.from('recipes').insert({ name, description: desc, crafting_fee: fee, created_by: currentUser.id }).select().single();
+        if (error) { notify(error.message, true); return; }
+        if (materials.length) {
+            await sb.from('recipe_materials').insert(materials.map(m => ({ ...m, recipe_id: data.id })));
+        }
+    }
+
+    closeModal();
+    notify('Recipe saved.');
+    await loadRecipes();
+    renderRecipes();
+}
+
+function editRecipe(id) { openRecipeModal(id); }
+
+async function deleteRecipe(id) {
+    if (!confirm('Delete this recipe?')) return;
+    await sb.from('recipes').delete().eq('id', id);
+    notify('Recipe deleted.');
+    await loadRecipes();
+    renderRecipes();
+}
+
+// ================================================================
+//  RENDER: PRICE LIST
+// ================================================================
+function renderPriceList() {
+    const search = (document.getElementById('price-search')?.value || '').toLowerCase();
+    const catFilter = document.getElementById('price-cat-filter')?.value || '';
+
+    // Populate category filter
+    const catSel = document.getElementById('price-cat-filter');
+    if (catSel && catSel.options.length <= 1) {
+        CATEGORIES.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c; opt.textContent = c;
+            catSel.appendChild(opt);
+        });
+    }
+
+    const entries = Object.entries(ALL_ITEMS)
+        .filter(([k, v]) => {
+            if (catFilter && v.category !== catFilter) return false;
+            if (search && !v.name.toLowerCase().includes(search)) return false;
+            return true;
+        })
+        .sort((a,b) => a[1].category.localeCompare(b[1].category) || a[1].name.localeCompare(b[1].name));
+
+    if (entries.length === 0) {
+        document.getElementById('price-table-wrap').innerHTML = '<p class="no-data">No items match your search.</p>';
+        return;
+    }
+
+    let html = '<table><thead><tr><th>Item</th><th>Category</th><th style="text-align:right">Price (Gold)</th></tr></thead><tbody>';
+    let lastCat = '';
+    entries.forEach(([key, item]) => {
+        if (item.category !== lastCat) {
+            lastCat = item.category;
+            html += `<tr class="cat-header"><td colspan="3">${item.category}</td></tr>`;
+        }
+        const price = getPrice(key);
+        const isCustom = customPrices[key] !== undefined;
+        const priceCell = canManage()
+            ? `<span class="editable-price" onclick="editPrice('${key}', this)" title="Click to edit">${price}${isCustom ? ' *' : ''}</span>`
+            : `${price}${isCustom ? ' *' : ''}`;
+
+        html += `<tr><td>${item.name}</td><td class="muted">${item.category}</td><td class="text-right gold">${priceCell}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    if (Object.keys(customPrices).length > 0) {
+        html += '<p class="muted mt-10">* = custom price (differs from default)</p>';
+    }
+    document.getElementById('price-table-wrap').innerHTML = html;
+}
+
+async function editPrice(key, el) {
+    if (!canManage()) return;
+    const current = getPrice(key);
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'price-input';
+    input.value = current;
+    input.min = 0;
+    el.replaceWith(input);
+    input.focus();
+    input.select();
+
+    const save = async () => {
+        const newPrice = parseInt(input.value);
+        if (isNaN(newPrice) || newPrice < 0) {
+            notify('Invalid price.', true);
+            renderPriceList();
+            return;
+        }
+
+        const { error } = await sb.from('custom_prices').upsert({
+            item_key: key,
+            custom_price: newPrice,
+            updated_by: currentUser.id,
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'item_key' });
+
+        if (error) { notify(error.message, true); }
+        else {
+            customPrices[key] = newPrice;
+            notify('Price updated.');
+        }
+        renderPriceList();
+    };
+
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { input.blur(); }
+        if (e.key === 'Escape') { renderPriceList(); }
+    });
+}
+
+// ================================================================
+//  RENDER: PLACE ORDER
+// ================================================================
+function renderOrderItems() {
+    const search = (document.getElementById('order-search')?.value || '').toLowerCase();
+    const catFilter = document.getElementById('order-cat-filter')?.value || '';
+
+    // Populate category filter
+    const catSel = document.getElementById('order-cat-filter');
+    if (catSel && catSel.options.length <= 1) {
+        CATEGORIES.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c; opt.textContent = c;
+            catSel.appendChild(opt);
+        });
+    }
+
+    const entries = Object.entries(ALL_ITEMS)
+        .filter(([k, v]) => {
+            if (catFilter && v.category !== catFilter) return false;
+            if (search && !v.name.toLowerCase().includes(search)) return false;
+            return true;
+        })
+        .sort((a,b) => a[1].name.localeCompare(b[1].name));
+
+    const grid = document.getElementById('order-item-grid');
+    if (entries.length === 0) {
+        grid.innerHTML = '<p class="no-data" style="grid-column:1/-1">No items match your search.</p>';
+        return;
+    }
+
+    grid.innerHTML = entries.map(([key, item]) => {
+        const price = getPrice(key);
+        const inCart = cart[key] || 0;
+        return `<div class="item-card${inCart ? ' selected' : ''}" onclick="addToCart('${key}')" style="${inCart ? 'border-color:var(--gold);background:rgba(201,168,76,0.12);' : ''}">
+            <div>
+                <div class="item-name">${item.name}</div>
+                <div class="muted" style="font-size:0.8em">${item.category}</div>
+            </div>
+            <div class="item-price">${price}g${inCart ? ` (${inCart})` : ''}</div>
+        </div>`;
+    }).join('');
+}
+
+function addToCart(key) {
+    if (!currentUser) { notify('Sign in to place orders.', true); return; }
+    cart[key] = (cart[key] || 0) + 1;
+    renderCart();
+    renderOrderItems();
+}
+
+function removeFromCart(key) {
+    if (cart[key] > 1) cart[key]--;
+    else delete cart[key];
+    renderCart();
+    renderOrderItems();
+}
+
+function deleteFromCart(key) {
+    delete cart[key];
+    renderCart();
+    renderOrderItems();
+}
+
+function renderCart() {
+    const keys = Object.keys(cart);
+    const wrap = document.getElementById('cart-items');
+    const totalWrap = document.getElementById('cart-total-wrap');
+    const submitBtn = document.getElementById('btn-submit-order');
+
+    if (keys.length === 0) {
+        wrap.innerHTML = '<p class="cart-empty">Cart is empty. Click items to add.</p>';
+        totalWrap.classList.add('hidden');
+        submitBtn.disabled = true;
+        return;
+    }
+
+    let total = 0;
+    wrap.innerHTML = keys.map(key => {
+        const qty = cart[key];
+        const price = getPrice(key);
+        const line = price * qty;
+        total += line;
+        return `<div class="cart-item">
+            <div style="flex:1">
+                <div style="font-weight:600;font-size:0.9em">${getItemName(key)}</div>
+                <div class="muted" style="font-size:0.8em">${formatGold(price)} ea</div>
+            </div>
+            <div class="qty-control">
+                <button class="btn-sm" onclick="removeFromCart('${key}')">-</button>
+                <span>${qty}</span>
+                <button class="btn-sm" onclick="addToCart('${key}')">+</button>
+            </div>
+            <div class="gold" style="min-width:70px;text-align:right">${formatGold(line)}</div>
+            <button class="btn-sm btn-danger" style="margin-left:4px" onclick="deleteFromCart('${key}')">X</button>
+        </div>`;
+    }).join('');
+
+    totalWrap.classList.remove('hidden');
+    document.getElementById('cart-total').textContent = total.toLocaleString();
+    submitBtn.disabled = !currentUser;
+}
+
+async function submitOrder() {
+    if (!currentUser) { notify('Sign in to place orders.', true); return; }
+    const keys = Object.keys(cart);
+    if (keys.length === 0) { notify('Cart is empty.', true); return; }
+
+    const notes = document.getElementById('order-notes').value.trim();
+    let total = 0;
+    const items = keys.map(key => {
+        const qty = cart[key];
+        const price = getPrice(key);
+        total += price * qty;
+        return { item_key: key, item_name: getItemName(key), quantity: qty, unit_price: price };
+    });
+
+    const { data: order, error } = await sb.from('orders').insert({
+        customer_id: currentUser.id,
+        customer_name: userName,
+        notes: notes || null,
+        total_price: total
+    }).select().single();
+
+    if (error) { notify(error.message, true); return; }
+
+    const { error: itemErr } = await sb.from('order_items').insert(
+        items.map(i => ({ ...i, order_id: order.id }))
+    );
+
+    if (itemErr) { notify(itemErr.message, true); return; }
+
+    cart = {};
+    document.getElementById('order-notes').value = '';
+    notify('Order placed successfully!');
+    renderCart();
+    renderOrderItems();
+    await loadOrders();
+    renderOrders();
+}
+
+// ================================================================
+//  RENDER: ORDERS
+// ================================================================
+function renderOrders() {
+    const statusFilter = document.getElementById('order-status-filter')?.value || '';
+    const filtered = orders.filter(o => !statusFilter || o.status === statusFilter);
+
+    const wrap = document.getElementById('orders-list');
+    if (filtered.length === 0) {
+        wrap.innerHTML = '<p class="no-data">No orders' + (statusFilter ? ' with this status' : '') + '.</p>';
+        return;
+    }
+
+    wrap.innerHTML = filtered.map(o => {
+        const items = orderItems[o.id] || [];
+        const itemsHtml = items.map(i =>
+            `<li>${i.quantity}x ${i.item_name} <span class="muted">@ ${formatGold(i.unit_price)}</span></li>`
+        ).join('');
+
+        const nextStatuses = getNextStatuses(o.status);
+        const statusBtns = canUpdateOrders() ? nextStatuses.map(s =>
+            `<button class="btn-sm btn-${s === 'cancelled' ? 'danger' : 'success'}" onclick="updateOrderStatus('${o.id}','${s}')">${statusLabel(s)}</button>`
+        ).join('') : '';
+
+        return `<div class="card">
+            <div class="card-header">
+                <div>
+                    <span class="card-title">${o.customer_name}</span>
+                    <span class="badge badge-${o.status}">${statusLabel(o.status)}</span>
+                </div>
+                <span class="muted">${timeAgo(o.created_at)}</span>
+            </div>
+            <ul class="mat-list">${itemsHtml}</ul>
+            ${o.notes ? `<p class="muted mt-10"><em>Notes: ${o.notes}</em></p>` : ''}
+            <div class="flex-between mt-10">
+                <span class="gold" style="font-family:'Cinzel',serif;">Total: ${formatGold(o.total_price || 0)}</span>
+                <div class="card-actions">${statusBtns}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function getNextStatuses(current) {
+    const flow = {
+        pending: ['in_progress', 'cancelled'],
+        in_progress: ['complete', 'cancelled'],
+        complete: ['picked_up'],
+        picked_up: [],
+        cancelled: ['pending']
+    };
+    return flow[current] || [];
+}
+
+async function updateOrderStatus(orderId, newStatus) {
+    const { error } = await sb.from('orders').update({
+        status: newStatus,
+        updated_at: new Date().toISOString()
+    }).eq('id', orderId);
+
+    if (error) { notify(error.message, true); return; }
+    notify(`Order marked as ${statusLabel(newStatus)}.`);
+    await loadOrders();
+    renderOrders();
+}
+
+// ================================================================
+//  RENDER: INVENTORY
+// ================================================================
+function renderInventory() {
+    const search = (document.getElementById('inv-search')?.value || '').toLowerCase();
+    const catFilter = document.getElementById('inv-cat-filter')?.value || '';
+
+    // Populate category filter
+    const catSel = document.getElementById('inv-cat-filter');
+    if (catSel && catSel.options.length <= 1) {
+        const invCats = [...new Set(inventory.map(i => i.category))].sort();
+        invCats.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c; opt.textContent = c;
+            catSel.appendChild(opt);
+        });
+    }
+
+    const filtered = inventory.filter(i => {
+        if (catFilter && i.category !== catFilter) return false;
+        if (search && !i.item_name.toLowerCase().includes(search)) return false;
+        return true;
+    });
+
+    const wrap = document.getElementById('inventory-table-wrap');
+    if (!currentUser) {
+        wrap.innerHTML = '<p class="no-data">Sign in to view inventory.</p>';
+        return;
+    }
+    if (filtered.length === 0 && inventory.length === 0) {
+        wrap.innerHTML = '<p class="no-data">No inventory records. An admin or quartermaster can add stock.</p>';
+        return;
+    }
+    if (filtered.length === 0) {
+        wrap.innerHTML = '<p class="no-data">No items match your search.</p>';
+        return;
+    }
+
+    let html = `<table><thead><tr>
+        <th>Item</th><th>Category</th><th style="text-align:right">Quantity</th>
+        <th>Last Updated</th>
+        ${canManage() ? '<th style="text-align:center">Actions</th>' : ''}
+    </tr></thead><tbody>`;
+
+    let lastCat = '';
+    filtered.forEach(item => {
+        if (item.category !== lastCat) {
+            lastCat = item.category;
+            html += `<tr class="cat-header"><td colspan="${canManage() ? 5 : 4}">${item.category}</td></tr>`;
+        }
+        html += `<tr>
+            <td>${item.item_name}</td>
+            <td class="muted">${item.category}</td>
+            <td class="text-right" style="font-weight:600">${item.quantity}</td>
+            <td class="muted">${item.updated_at ? timeAgo(item.updated_at) : '—'}</td>
+            ${canManage() ? `<td class="text-center">
+                <button class="btn-sm" onclick="editInventoryItem('${item.id}')">Edit</button>
+                <button class="btn-sm btn-danger" onclick="deleteInventoryItem('${item.id}')">Remove</button>
+            </td>` : ''}
+        </tr>`;
+    });
+
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+}
+
+function openInventoryModal(existingId) {
+    const existing = existingId ? inventory.find(i => i.id === existingId) : null;
+
+    const itemOptions = Object.entries(ALL_ITEMS)
+        .filter(([k,v]) => v.category === 'Smithing Materials' || v.category === 'Alchemy Ingredients' || v.category === 'Gems' || v.category === 'Miscellaneous')
+        .sort((a,b) => a[1].name.localeCompare(b[1].name))
+        .map(([k,v]) => `<option value="${k}" ${existing?.item_key === k ? 'selected' : ''}>${v.name} (${v.category})</option>`)
+        .join('');
+
+    openModal(`
+        <h3 class="modal-title">${existing ? 'Edit' : 'Add'} Inventory Item</h3>
+        <div class="form-group">
+            <label>Item</label>
+            <select id="inv-item-key" style="width:100%" ${existing ? 'disabled' : ''}>${itemOptions}</select>
+        </div>
+        <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" id="inv-qty" value="${existing?.quantity || 0}" min="0" style="width:120px">
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveInventoryItem('${existingId || ''}')">Save</button>
+        </div>
+    `);
+}
+
+async function saveInventoryItem(existingId) {
+    const key = document.getElementById('inv-item-key').value;
+    const qty = parseInt(document.getElementById('inv-qty').value) || 0;
+    const item = ALL_ITEMS[key];
+
+    if (existingId) {
+        const { error } = await sb.from('inventory').update({
+            quantity: qty,
+            updated_by: currentUser.id,
+            updated_at: new Date().toISOString()
+        }).eq('id', existingId);
+        if (error) { notify(error.message, true); return; }
+    } else {
+        const { error } = await sb.from('inventory').upsert({
+            item_key: key,
+            item_name: item?.name || key,
+            category: item?.category || 'Unknown',
+            quantity: qty,
+            updated_by: currentUser.id,
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'item_key' });
+        if (error) { notify(error.message, true); return; }
+    }
+
+    closeModal();
+    notify('Inventory updated.');
+    await loadInventory();
+    renderInventory();
+}
+
+function editInventoryItem(id) { openInventoryModal(id); }
+
+async function deleteInventoryItem(id) {
+    if (!confirm('Remove this inventory record?')) return;
+    await sb.from('inventory').delete().eq('id', id);
+    notify('Item removed from inventory.');
+    await loadInventory();
+    renderInventory();
+}
+
+// ================================================================
+//  RENDER: MEMBERS
+// ================================================================
+function renderMembers() {
+    const wrap = document.getElementById('members-table-wrap');
+    if (members.length === 0) {
+        wrap.innerHTML = '<p class="no-data">No members yet. An admin can add clan members.</p>';
+        return;
+    }
+
+    let html = `<table><thead><tr>
+        <th>Name</th><th>Profession</th><th>Rank</th><th>Joined</th><th>Notes</th>
+        ${isAdmin() ? '<th style="text-align:center">Actions</th>' : ''}
+    </tr></thead><tbody>`;
+
+    members.forEach(m => {
+        html += `<tr>
+            <td style="font-weight:600">${m.name}</td>
+            <td>${m.profession || '—'}</td>
+            <td>${m.rank || '—'}</td>
+            <td class="muted">${m.joined_date || '—'}</td>
+            <td class="muted">${m.notes || ''}</td>
+            ${isAdmin() ? `<td class="text-center">
+                <button class="btn-sm" onclick="openMemberModal('${m.id}')">Edit</button>
+                <button class="btn-sm btn-danger" onclick="deleteMember('${m.id}')">Remove</button>
+            </td>` : ''}
+        </tr>`;
+    });
+
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+}
+
+function openMemberModal(existingId) {
+    const existing = existingId ? members.find(m => m.id === existingId) : null;
+
+    openModal(`
+        <h3 class="modal-title">${existing ? 'Edit' : 'Add'} Clan Member</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="mem-name" value="${existing?.name || ''}" style="width:100%">
+            </div>
+            <div class="form-group">
+                <label>Rank</label>
+                <input type="text" id="mem-rank" value="${existing?.rank || ''}" style="width:100%" placeholder="e.g. Guild Master, Journeyman...">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Profession</label>
+                <input type="text" id="mem-prof" value="${existing?.profession || ''}" style="width:100%" placeholder="e.g. Blacksmith, Alchemist...">
+            </div>
+            <div class="form-group">
+                <label>Joined Date</label>
+                <input type="date" id="mem-date" value="${existing?.joined_date || new Date().toISOString().split('T')[0]}" style="width:100%">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Notes</label>
+            <textarea id="mem-notes" style="width:100%">${existing?.notes || ''}</textarea>
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveMember('${existingId || ''}')">Save Member</button>
+        </div>
+    `);
+}
+
+async function saveMember(existingId) {
+    const name = document.getElementById('mem-name').value.trim();
+    if (!name) { notify('Name is required.', true); return; }
+
+    const data = {
+        name,
+        profession: document.getElementById('mem-prof').value.trim() || null,
+        rank: document.getElementById('mem-rank').value.trim() || null,
+        joined_date: document.getElementById('mem-date').value || null,
+        notes: document.getElementById('mem-notes').value.trim() || null
+    };
+
+    if (existingId) {
+        const { error } = await sb.from('members').update(data).eq('id', existingId);
+        if (error) { notify(error.message, true); return; }
+    } else {
+        const { error } = await sb.from('members').insert(data);
+        if (error) { notify(error.message, true); return; }
+    }
+
+    closeModal();
+    notify('Member saved.');
+    await loadMembers();
+    renderMembers();
+}
+
+async function deleteMember(id) {
+    if (!confirm('Remove this member?')) return;
+    await sb.from('members').delete().eq('id', id);
+    notify('Member removed.');
+    await loadMembers();
+    renderMembers();
+}
+
+// ================================================================
+//  RENDER ALL
+// ================================================================
+function renderAll() {
+    renderRecipes();
+    renderPriceList();
+    renderOrderItems();
+    renderCart();
+    renderOrders();
+    renderInventory();
+    renderMembers();
+}
+
+// ================================================================
+//  AUTH STATE LISTENER & INIT
+// ================================================================
+sb.auth.onAuthStateChange(async (event, session) => {
+    const wasLoggedIn = !!currentUser;
+    currentUser = session?.user || null;
+    if (currentUser) {
+        await loadUserRole();
+    } else {
+        userRole = 'viewer';
+        userName = 'Adventurer';
+    }
+    updateAuthUI();
+    if (!wasLoggedIn && currentUser) {
+        await loadAllData();
+        renderAll();
+    }
+});
+
+async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+        currentUser = session.user;
+        await loadUserRole();
+    }
+    await loadAllData();
+    updateAuthUI();
+    renderAll();
+}
+
+init();
+</script>
+
+</body>
+</html>
