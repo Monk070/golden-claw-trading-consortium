@@ -1160,9 +1160,11 @@ let cart = {};            // { item_key: quantity }
 // ================================================================
 //  AUTH
 // ================================================================
+function isAdmin() { return userRole === 'admin'; }
 function canManage() { return ['admin','quartermaster'].includes(userRole); }
 function canUpdateOrders() { return ['admin','quartermaster','blacksmith'].includes(userRole); }
-function isAdmin() { return userRole === 'admin'; }
+function canViewAll() { return ['admin','quartermaster','blacksmith','member'].includes(userRole); }
+function canPlaceOrders() { return ['admin','quartermaster','blacksmith','viewer'].includes(userRole); }
 
 async function loadUserRole() {
     if (!currentUser) { userRole = 'viewer'; userName = 'Adventurer'; characterName = ''; return; }
@@ -1194,6 +1196,24 @@ function updateAuthUI() {
         setupGate.style.display = 'none';
         appContent.classList.add('visible');
         tabs.style.display = 'flex';
+
+        // Tab visibility by role
+        const guildTabs = tabs.querySelectorAll('.main-tab[data-tab="prices"], .main-tab[data-tab="recipes"], .main-tab[data-tab="inventory"], .main-tab[data-tab="orders"], .main-tab[data-tab="members"]');
+        const tabSep = tabs.querySelector('.tab-separator');
+        const showGuild = canViewAll();
+        guildTabs.forEach(t => t.style.display = showGuild ? '' : 'none');
+        if (tabSep) tabSep.style.display = showGuild ? '' : 'none';
+
+        // Hide Place Order tab for members (view-only role)
+        const orderTab = tabs.querySelector('.main-tab[data-tab="order"]');
+        if (orderTab) orderTab.style.display = canPlaceOrders() ? '' : 'none';
+
+        // If current active tab is hidden, switch to first visible
+        const activeTab = tabs.querySelector('.main-tab.active');
+        if (activeTab && activeTab.style.display === 'none') {
+            const firstVisible = tabs.querySelector('.main-tab:not([style*="display: none"])');
+            if (firstVisible) firstVisible.click();
+        }
     } else if (currentUser && !characterName) {
         // Logged in but no character name — show setup
         bar.innerHTML = `<button onclick="signOut()">Sign Out</button>`;
@@ -1214,7 +1234,7 @@ function updateAuthUI() {
     document.getElementById('btn-add-recipe').classList.toggle('hidden', !canManage());
     document.getElementById('btn-add-inv').classList.toggle('hidden', !canManage());
     document.getElementById('btn-add-member').classList.toggle('hidden', !isAdmin());
-    document.getElementById('btn-submit-order').disabled = !currentUser;
+    document.getElementById('btn-submit-order').disabled = !canPlaceOrders();
 }
 
 async function signInDiscord() {
@@ -1675,7 +1695,7 @@ function renderOrderItems() {
 }
 
 function addToCart(key) {
-    if (!currentUser) { notify('Sign in to place orders.', true); return; }
+    if (!canPlaceOrders()) { notify('Your role cannot place orders.', true); return; }
     cart[key] = (cart[key] || 0) + 1;
     renderCart();
     renderOrderItems();
@@ -1734,7 +1754,7 @@ function renderCart() {
 }
 
 async function submitOrder() {
-    if (!currentUser) { notify('Sign in to place orders.', true); return; }
+    if (!canPlaceOrders()) { notify('Your role cannot place orders.', true); return; }
     const keys = Object.keys(cart);
     if (keys.length === 0) { notify('Cart is empty.', true); return; }
 
