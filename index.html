@@ -849,9 +849,7 @@
     <div class="tab-panel" id="panel-members">
         <div class="toolbar">
             <h2 class="section-title" style="border:none;margin:0;padding:0;">Clan Members</h2>
-            <div class="toolbar-right">
-                <button id="btn-add-member" class="btn-primary hidden" onclick="openMemberModal()">+ Add Member</button>
-            </div>
+            <div class="toolbar-right" id="btn-add-member" style="display:none;"></div>
         </div>
         <div id="members-table-wrap">
             <p class="no-data">No members yet. An admin can add clan members.</p>
@@ -1366,8 +1364,28 @@ async function loadInventory() {
 }
 
 async function loadMembers() {
-    const { data } = await sb.from('members').select('*').order('rank').order('name');
-    members = data || [];
+    // Load all profiles (everyone who has signed in)
+    const { data: profiles } = await sb.from('profiles').select('*').order('role').order('character_name');
+    // Load member extras (profession, etc.)
+    const { data: memberData } = await sb.from('members').select('*');
+    const membersByProfile = {};
+    (memberData || []).forEach(m => {
+        if (m.profile_id) membersByProfile[m.profile_id] = m;
+    });
+    // Merge profiles with member data
+    members = (profiles || []).filter(p => p.character_name).map(p => {
+        const m = membersByProfile[p.id] || {};
+        return {
+            profile_id: p.id,
+            character_name: p.character_name,
+            discord_name: p.display_name,
+            role: p.role || 'viewer',
+            profession: m.profession || null,
+            joined_date: m.joined_date || p.created_at?.split('T')[0] || null,
+            notes: m.notes || null,
+            member_id: m.id || null
+        };
+    });
 }
 
 async function loadAllData() {
@@ -2070,29 +2088,43 @@ async function deleteInventoryItem(id) {
 // ================================================================
 //  RENDER: MEMBERS
 // ================================================================
+const ROLE_ORDER = ['admin','quartermaster','blacksmith','member','viewer'];
+
 function renderMembers() {
     const wrap = document.getElementById('members-table-wrap');
     if (members.length === 0) {
-        wrap.innerHTML = '<p class="no-data">No members yet. An admin can add clan members.</p>';
+        wrap.innerHTML = '<p class="no-data">No members have joined yet.</p>';
         return;
     }
 
+    // Sort by role hierarchy then name
+    const sorted = [...members].sort((a, b) => {
+        const ra = ROLE_ORDER.indexOf(a.role), rb = ROLE_ORDER.indexOf(b.role);
+        if (ra !== rb) return ra - rb;
+        return (a.character_name || '').localeCompare(b.character_name || '');
+    });
+
     let html = `<table><thead><tr>
-        <th>Character</th><th>Discord</th><th>Profession</th><th>Rank</th><th>Joined</th><th>Notes</th>
+        <th>Character</th><th>Discord</th><th>Role</th><th>Profession</th><th>Joined</th>
         ${isAdmin() ? '<th style="text-align:center">Actions</th>' : ''}
     </tr></thead><tbody>`;
 
-    members.forEach(m => {
+    sorted.forEach(m => {
+        const roleLabel = m.role.charAt(0).toUpperCase() + m.role.slice(1);
+        const roleCell = isAdmin()
+            ? `<select onchange="changeRole('${m.profile_id}', this.value)" style="font-family:'Cinzel',serif;font-size:0.85em;padding:4px 8px;border:1px solid var(--parchment-dark);border-radius:3px;background:var(--parchment-light);">
+                ${ROLE_ORDER.map(r => `<option value="${r}" ${m.role === r ? 'selected' : ''}>${r.charAt(0).toUpperCase() + r.slice(1)}</option>`).join('')}
+              </select>`
+            : `<span class="badge badge-${m.role}">${roleLabel}</span>`;
+
         html += `<tr>
-            <td style="font-weight:600">${m.name}</td>
+            <td style="font-weight:600">${m.character_name}</td>
             <td class="muted">${m.discord_name || '—'}</td>
+            <td>${roleCell}</td>
             <td>${m.profession || '—'}</td>
-            <td>${m.rank || '—'}</td>
             <td class="muted">${m.joined_date || '—'}</td>
-            <td class="muted">${m.notes || ''}</td>
             ${isAdmin() ? `<td class="text-center">
-                <button class="btn-sm" onclick="openMemberModal('${m.id}')">Edit</button>
-                <button class="btn-sm btn-danger" onclick="deleteMember('${m.id}')">Remove</button>
+                <button class="btn-sm" onclick="openMemberModal('${m.profile_id}')">Edit</button>
             </td>` : ''}
         </tr>`;
     });
@@ -2101,72 +2133,60 @@ function renderMembers() {
     wrap.innerHTML = html;
 }
 
-function openMemberModal(existingId) {
-    const existing = existingId ? members.find(m => m.id === existingId) : null;
-
-    openModal(`
-        <h3 class="modal-title">${existing ? 'Edit' : 'Add'} Clan Member</h3>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Name</label>
-                <input type="text" id="mem-name" value="${existing?.name || ''}" style="width:100%">
-            </div>
-            <div class="form-group">
-                <label>Rank</label>
-                <input type="text" id="mem-rank" value="${existing?.rank || ''}" style="width:100%" placeholder="e.g. Guild Master, Journeyman...">
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Profession</label>
-                <input type="text" id="mem-prof" value="${existing?.profession || ''}" style="width:100%" placeholder="e.g. Blacksmith, Alchemist...">
-            </div>
-            <div class="form-group">
-                <label>Joined Date</label>
-                <input type="date" id="mem-date" value="${existing?.joined_date || new Date().toISOString().split('T')[0]}" style="width:100%">
-            </div>
-        </div>
-        <div class="form-group">
-            <label>Notes</label>
-            <textarea id="mem-notes" style="width:100%">${existing?.notes || ''}</textarea>
-        </div>
-        <div class="modal-actions">
-            <button onclick="closeModal()">Cancel</button>
-            <button class="btn-primary" onclick="saveMember('${existingId || ''}')">Save Member</button>
-        </div>
-    `);
-}
-
-async function saveMember(existingId) {
-    const name = document.getElementById('mem-name').value.trim();
-    if (!name) { notify('Name is required.', true); return; }
-
-    const data = {
-        name,
-        profession: document.getElementById('mem-prof').value.trim() || null,
-        rank: document.getElementById('mem-rank').value.trim() || null,
-        joined_date: document.getElementById('mem-date').value || null,
-        notes: document.getElementById('mem-notes').value.trim() || null
-    };
-
-    if (existingId) {
-        const { error } = await sb.from('members').update(data).eq('id', existingId);
-        if (error) { notify(error.message, true); return; }
-    } else {
-        const { error } = await sb.from('members').insert(data);
-        if (error) { notify(error.message, true); return; }
-    }
-
-    closeModal();
-    notify('Member saved.');
+async function changeRole(profileId, newRole) {
+    if (!isActualAdmin()) { notify('Only admins can change roles.', true); return; }
+    const { error } = await sb.from('profiles').update({ role: newRole }).eq('id', profileId);
+    if (error) { notify(error.message, true); return; }
+    notify('Role updated.');
     await loadMembers();
     renderMembers();
 }
 
-async function deleteMember(id) {
-    if (!confirm('Remove this member?')) return;
-    await sb.from('members').delete().eq('id', id);
-    notify('Member removed.');
+function openMemberModal(profileId) {
+    const existing = members.find(m => m.profile_id === profileId);
+    if (!existing) return;
+
+    openModal(`
+        <h3 class="modal-title">Edit Member — ${existing.character_name}</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Profession</label>
+                <input type="text" id="mem-prof" value="${existing.profession || ''}" style="width:100%" placeholder="e.g. Blacksmith, Alchemist...">
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" id="mem-notes" value="${existing.notes || ''}" style="width:100%">
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveMember('${profileId}')">Save</button>
+        </div>
+    `);
+}
+
+async function saveMember(profileId) {
+    const existing = members.find(m => m.profile_id === profileId);
+    const profession = document.getElementById('mem-prof').value.trim() || null;
+    const notes = document.getElementById('mem-notes').value.trim() || null;
+
+    if (existing?.member_id) {
+        const { error } = await sb.from('members').update({ profession, notes }).eq('id', existing.member_id);
+        if (error) { notify(error.message, true); return; }
+    } else {
+        const { error } = await sb.from('members').insert({
+            name: existing.character_name,
+            discord_name: existing.discord_name,
+            profile_id: profileId,
+            profession,
+            notes,
+            joined_date: existing.joined_date
+        });
+        if (error) { notify(error.message, true); return; }
+    }
+
+    closeModal();
+    notify('Member updated.');
     await loadMembers();
     renderMembers();
 }
