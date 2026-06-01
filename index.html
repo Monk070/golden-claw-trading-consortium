@@ -1728,7 +1728,12 @@ async function toggleStoreItem(key, enabled) {
         const { error } = await sb.from('store_items').delete().eq('item_key', key);
         if (error) { notify(error.message, true); return; }
         delete storeItems[key];
+        // Remove from cart if it was there
+        if (cart[key]) { delete cart[key]; renderCart(); }
     }
+    // Reset the order category filter to avoid stale filtering
+    const catSel = document.getElementById('order-cat-filter');
+    if (catSel) { catSel.innerHTML = '<option value="">All Categories</option>'; }
     renderOrderItems();
 }
 
