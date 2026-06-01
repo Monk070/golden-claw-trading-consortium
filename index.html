@@ -1906,16 +1906,28 @@ function renderOrders() {
         return;
     }
 
+    const allStatuses = ['pending','in_progress','complete','picked_up','cancelled'];
+
     wrap.innerHTML = filtered.map(o => {
         const items = orderItems[o.id] || [];
         const itemsHtml = items.map(i =>
             `<li>${i.quantity}x ${i.item_name} <span class="muted">@ ${formatGold(i.unit_price)}</span></li>`
         ).join('');
 
-        const nextStatuses = getNextStatuses(o.status);
-        const statusBtns = canUpdateOrders() ? nextStatuses.map(s =>
-            `<button class="btn-sm btn-${s === 'cancelled' ? 'danger' : 'success'}" onclick="updateOrderStatus('${o.id}','${s}')">${statusLabel(s)}</button>`
-        ).join('') : '';
+        let statusControl = '';
+        if (isAdmin()) {
+            // Admin gets a full dropdown for any status
+            statusControl = `<select onchange="updateOrderStatus('${o.id}', this.value)" style="font-family:'Cinzel',serif;font-size:0.82em;padding:4px 8px;border:1px solid var(--parchment-dark);border-radius:3px;background:var(--parchment-light);">
+                ${allStatuses.map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${statusLabel(s)}</option>`).join('')}
+            </select>`;
+        } else if (canUpdateOrders()) {
+            const nextStatuses = getNextStatuses(o.status);
+            statusControl = nextStatuses.map(s =>
+                `<button class="btn-sm btn-${s === 'cancelled' ? 'danger' : 'success'}" onclick="updateOrderStatus('${o.id}','${s}')">${statusLabel(s)}</button>`
+            ).join('');
+        }
+
+        const editBtn = isAdmin() ? `<button class="btn-sm" onclick="openEditOrderModal('${o.id}')">Edit</button>` : '';
 
         return `<div class="card">
             <div class="card-header">
@@ -1929,7 +1941,7 @@ function renderOrders() {
             ${o.notes ? `<p class="muted mt-10"><em>Notes: ${o.notes}</em></p>` : ''}
             <div class="flex-between mt-10">
                 <span class="gold" style="font-family:'Cinzel',serif;">Total: ${formatGold(o.total_price || 0)}</span>
-                <div class="card-actions">${statusBtns}</div>
+                <div class="card-actions">${statusControl} ${editBtn}</div>
             </div>
         </div>`;
     }).join('');
@@ -1954,6 +1966,101 @@ async function updateOrderStatus(orderId, newStatus) {
 
     if (error) { notify(error.message, true); return; }
     notify(`Order marked as ${statusLabel(newStatus)}.`);
+    await loadOrders();
+    renderOrders();
+}
+
+function openEditOrderModal(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    const items = orderItems[orderId] || [];
+
+    const allStatuses = ['pending','in_progress','complete','picked_up','cancelled'];
+    const itemsHtml = items.map((it, i) =>
+        `<div class="form-row" style="align-items:center;margin-bottom:6px;">
+            <span style="flex:1;font-size:0.92em;">${it.item_name}</span>
+            <input type="number" id="oi-qty-${i}" value="${it.quantity}" min="1" style="width:70px;text-align:center;">
+            <input type="number" id="oi-price-${i}" value="${it.unit_price}" min="0" style="width:90px;text-align:right;">
+            <span class="muted" style="font-size:0.8em;min-width:20px;">g</span>
+            <button class="btn-sm btn-danger" onclick="this.closest('.form-row').remove()">X</button>
+        </div>`
+    ).join('');
+
+    openModal(`
+        <h3 class="modal-title">Edit Order — ${order.customer_name}</h3>
+        <div class="form-group">
+            <label>Customer Name</label>
+            <input type="text" id="edit-order-name" value="${order.customer_name}" style="width:100%">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Status</label>
+                <select id="edit-order-status" style="width:100%">
+                    ${allStatuses.map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${statusLabel(s)}</option>`).join('')}
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Notes</label>
+            <textarea id="edit-order-notes" style="width:100%">${order.notes || ''}</textarea>
+        </div>
+        <h4 class="section-subtitle">Items <span class="muted">(qty / price per unit)</span></h4>
+        <div id="edit-order-items">${itemsHtml}</div>
+        <div class="modal-actions">
+            <button onclick="closeModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveOrderEdit('${orderId}')">Save Order</button>
+        </div>
+    `);
+}
+
+async function saveOrderEdit(orderId) {
+    const name = document.getElementById('edit-order-name').value.trim();
+    const status = document.getElementById('edit-order-status').value;
+    const notes = document.getElementById('edit-order-notes').value.trim();
+
+    // Gather updated item rows
+    const rows = document.getElementById('edit-order-items').querySelectorAll('.form-row');
+    const items = orderItems[orderId] || [];
+    let total = 0;
+    const updates = [];
+    rows.forEach((row, i) => {
+        const qtyEl = row.querySelector('[id^="oi-qty-"]');
+        const priceEl = row.querySelector('[id^="oi-price-"]');
+        if (!qtyEl || !priceEl) return;
+        const qty = parseInt(qtyEl.value) || 1;
+        const price = parseInt(priceEl.value) || 0;
+        total += qty * price;
+        if (items[i]) {
+            updates.push({ id: items[i].id, quantity: qty, unit_price: price });
+        }
+    });
+
+    // Update order
+    const { error } = await sb.from('orders').update({
+        customer_name: name || undefined,
+        status,
+        notes: notes || null,
+        total_price: total,
+        updated_at: new Date().toISOString()
+    }).eq('id', orderId);
+
+    if (error) { notify(error.message, true); return; }
+
+    // Update items
+    for (const u of updates) {
+        await sb.from('order_items').update({ quantity: u.quantity, unit_price: u.unit_price }).eq('id', u.id);
+    }
+
+    // Delete removed items (rows that were X'd out)
+    const remainingIds = updates.map(u => u.id);
+    for (const item of items) {
+        if (!remainingIds.includes(item.id)) {
+            await sb.from('order_items').delete().eq('id', item.id);
+        }
+    }
+
+    closeModal();
+    notify('Order updated.');
     await loadOrders();
     renderOrders();
 }
