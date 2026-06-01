@@ -1225,7 +1225,7 @@ function isAdmin() { return effectiveRole() === 'admin'; }
 function canManage() { return ['admin','quartermaster'].includes(effectiveRole()); }
 function canUpdateOrders() { return ['admin','quartermaster','blacksmith'].includes(effectiveRole()); }
 function canViewAll() { return ['admin','quartermaster','blacksmith','member'].includes(effectiveRole()); }
-function canPlaceOrders() { return ['admin','quartermaster','blacksmith','viewer'].includes(effectiveRole()); }
+function canPlaceOrders() { return ['admin','quartermaster','blacksmith','member','viewer'].includes(effectiveRole()); }
 
 function setViewAs(role) {
     viewAsRole = role === 'admin' ? null : role;
@@ -1990,6 +1990,7 @@ function renderOrders() {
         }
 
         const editBtn = isAdmin() ? `<button class="btn-sm" onclick="openEditOrderModal('${o.id}')">Edit</button>` : '';
+        const deleteBtn = canManage() ? `<button class="btn-sm btn-danger" onclick="deleteOrder('${o.id}')">Delete</button>` : '';
 
         const discordName = o.profiles?.display_name || '';
         const avatarUrl = o.profiles?.avatar_url || '';
@@ -2010,7 +2011,7 @@ function renderOrders() {
             ${o.notes ? `<p class="muted mt-10"><em>Notes: ${o.notes}</em></p>` : ''}
             <div class="flex-between mt-10">
                 <span class="gold" style="font-family:'Cinzel',serif;">Total: ${formatGold(o.total_price || 0)}</span>
-                <div class="card-actions">${statusControl} ${editBtn}</div>
+                <div class="card-actions">${statusControl} ${editBtn} ${deleteBtn}</div>
             </div>
         </div>`;
     }).join('');
@@ -2035,6 +2036,16 @@ async function updateOrderStatus(orderId, newStatus) {
 
     if (error) { notify(error.message, true); return; }
     notify(`Order marked as ${statusLabel(newStatus)}.`);
+    await loadOrders();
+    renderOrders();
+}
+
+async function deleteOrder(orderId) {
+    if (!canManage()) return;
+    if (!confirm('Delete this order? This cannot be undone.')) return;
+    const { error } = await sb.from('orders').delete().eq('id', orderId);
+    if (error) { notify(error.message, true); return; }
+    notify('Order deleted.');
     await loadOrders();
     renderOrders();
 }

@@ -172,8 +172,8 @@ create policy "Staff can update orders"
   on public.orders for update using (
     public.get_my_role() in ('admin','quartermaster','blacksmith')
   );
-create policy "Admin can delete orders"
-  on public.orders for delete using (public.get_my_role() = 'admin');
+create policy "Admin/QM can delete orders"
+  on public.orders for delete using (public.get_my_role() in ('admin','quartermaster'));
 
 -- ORDER ITEMS
 create policy "Order items viewable with order access"
