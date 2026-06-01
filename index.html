@@ -1395,7 +1395,7 @@ async function loadRecipes() {
 }
 
 async function loadOrders() {
-    const { data } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+    const { data } = await sb.from('orders').select('*, profiles:customer_id(display_name, avatar_url)').order('created_at', { ascending: false });
     orders = data || [];
     const { data: items } = await sb.from('order_items').select('*');
     orderItems = {};
@@ -1991,11 +1991,18 @@ function renderOrders() {
 
         const editBtn = isAdmin() ? `<button class="btn-sm" onclick="openEditOrderModal('${o.id}')">Edit</button>` : '';
 
+        const discordName = o.profiles?.display_name || '';
+        const avatarUrl = o.profiles?.avatar_url || '';
+
         return `<div class="card">
             <div class="card-header">
-                <div>
-                    <span class="card-title">${o.customer_name}</span>
-                    <span class="badge badge-${o.status}">${statusLabel(o.status)}</span>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    ${avatarUrl ? `<img src="${avatarUrl}" style="width:24px;height:24px;border-radius:50%;border:1px solid var(--gold);">` : ''}
+                    <div>
+                        <span class="card-title">${o.customer_name}</span>
+                        ${discordName ? `<span class="muted" style="font-size:0.82em;margin-left:6px;">(${discordName})</span>` : ''}
+                        <span class="badge badge-${o.status}">${statusLabel(o.status)}</span>
+                    </div>
                 </div>
                 <span class="muted">${timeAgo(o.created_at)}</span>
             </div>
