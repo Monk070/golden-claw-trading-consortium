@@ -579,6 +579,38 @@
             text-align: right;
         }
 
+        /* ===== RECIPE FILTER TABS ===== */
+        .recipe-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+
+        .recipe-filter {
+            font-family: 'Cinzel', serif;
+            font-size: 0.78em;
+            padding: 5px 14px;
+            border: 1px solid var(--parchment-dark);
+            border-radius: 3px;
+            background: var(--parchment-light);
+            color: var(--ink-light);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .recipe-filter:hover {
+            border-color: var(--gold);
+            color: var(--ink);
+            background: rgba(201,168,76,0.1);
+        }
+
+        .recipe-filter.active {
+            background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: white;
+            border-color: var(--gold-dark);
+        }
+
         /* ===== RECIPE MATERIALS LIST ===== */
         .mat-list {
             list-style: none;
@@ -745,6 +777,20 @@
             <div class="toolbar-right">
                 <button id="btn-add-recipe" class="btn-primary hidden" onclick="openRecipeModal()">+ Add Recipe</button>
             </div>
+        </div>
+        <div class="recipe-filters" id="recipe-filters">
+            <button class="recipe-filter active" data-material="" onclick="filterRecipes(this)">All</button>
+            <button class="recipe-filter" data-material="Iron" onclick="filterRecipes(this)">Iron</button>
+            <button class="recipe-filter" data-material="Steel" onclick="filterRecipes(this)">Steel</button>
+            <button class="recipe-filter" data-material="Orcish" onclick="filterRecipes(this)">Orcish</button>
+            <button class="recipe-filter" data-material="Dwarven" onclick="filterRecipes(this)">Dwarven</button>
+            <button class="recipe-filter" data-material="Elven" onclick="filterRecipes(this)">Elven</button>
+            <button class="recipe-filter" data-material="Nordic" onclick="filterRecipes(this)">Nordic</button>
+            <button class="recipe-filter" data-material="Glass" onclick="filterRecipes(this)">Glass</button>
+            <button class="recipe-filter" data-material="Ebony" onclick="filterRecipes(this)">Ebony</button>
+            <button class="recipe-filter" data-material="Stalhrim" onclick="filterRecipes(this)">Stalhrim</button>
+            <button class="recipe-filter" data-material="Daedric" onclick="filterRecipes(this)">Daedric</button>
+            <button class="recipe-filter" data-material="Dragonbone" onclick="filterRecipes(this)">Dragonbone</button>
         </div>
         <div id="recipes-list">
             <p class="no-data">No recipes yet. An admin or quartermaster can add them.</p>
@@ -1163,6 +1209,7 @@ let customPrices = {};   // { item_key: price }
 let storeItems = {};     // { item_key: true } — items enabled for sale
 let recipes = [];
 let recipeMaterials = {}; // { recipe_id: [{ item_key, quantity }] }
+let recipeFilterMaterial = '';
 let orders = [];
 let orderItems = {};     // { order_id: [{ item_key, item_name, quantity, unit_price }] }
 let inventory = [];
@@ -1465,14 +1512,28 @@ document.querySelectorAll('.main-tab').forEach(tab => {
 // ================================================================
 //  RENDER: RECIPES
 // ================================================================
+function filterRecipes(btn) {
+    document.querySelectorAll('.recipe-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    recipeFilterMaterial = btn.dataset.material;
+    renderRecipes();
+}
+
 function renderRecipes() {
     const wrap = document.getElementById('recipes-list');
     if (recipes.length === 0) {
         wrap.innerHTML = '<p class="no-data">No recipes yet. An admin or quartermaster can add them.</p>';
         return;
     }
+    const filtered = recipeFilterMaterial
+        ? recipes.filter(r => r.name.toLowerCase().startsWith(recipeFilterMaterial.toLowerCase()))
+        : recipes;
+    if (filtered.length === 0) {
+        wrap.innerHTML = `<p class="no-data">No recipes found for "${recipeFilterMaterial}".</p>`;
+        return;
+    }
     let html = '';
-    recipes.forEach(r => {
+    filtered.forEach(r => {
         const mats = recipeMaterials[r.id] || [];
         let matHtml = '';
         let matCost = 0;
