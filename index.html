@@ -1458,7 +1458,7 @@ function getItemName(key) {
     return ALL_ITEMS[key]?.name || key;
 }
 
-function formatGold(n) { return n.toLocaleString() + ' gold'; }
+function formatGold(n) { return (Number.isInteger(n) ? n.toLocaleString() : n.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 })) + ' gold'; }
 
 function notify(msg, isError = false) {
     const el = document.createElement('div');
@@ -1745,12 +1745,13 @@ async function editPrice(key, el) {
     input.className = 'price-input';
     input.value = current;
     input.min = 0;
+    input.step = '0.1';
     el.replaceWith(input);
     input.focus();
     input.select();
 
     const save = async () => {
-        const newPrice = parseInt(input.value);
+        const newPrice = parseFloat(input.value);
         if (isNaN(newPrice) || newPrice < 0) {
             notify('Invalid price.', true);
             renderPriceList();
@@ -1903,7 +1904,7 @@ function renderCart() {
     }).join('');
 
     totalWrap.classList.remove('hidden');
-    document.getElementById('cart-total').textContent = total.toLocaleString();
+    document.getElementById('cart-total').textContent = Number.isInteger(total) ? total.toLocaleString() : total.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 });
     submitBtn.disabled = !currentUser;
 }
 
@@ -2041,7 +2042,7 @@ function openEditOrderModal(orderId) {
         `<div class="form-row" style="align-items:center;margin-bottom:6px;">
             <span style="flex:1;font-size:0.92em;">${it.item_name}</span>
             <input type="number" id="oi-qty-${i}" value="${it.quantity}" min="1" style="width:70px;text-align:center;">
-            <input type="number" id="oi-price-${i}" value="${it.unit_price}" min="0" style="width:90px;text-align:right;">
+            <input type="number" id="oi-price-${i}" value="${it.unit_price}" min="0" step="0.1" style="width:90px;text-align:right;">
             <span class="muted" style="font-size:0.8em;min-width:20px;">g</span>
             <button class="btn-sm btn-danger" onclick="this.closest('.form-row').remove()">X</button>
         </div>`
@@ -2089,7 +2090,7 @@ async function saveOrderEdit(orderId) {
         const priceEl = row.querySelector('[id^="oi-price-"]');
         if (!qtyEl || !priceEl) return;
         const qty = parseInt(qtyEl.value) || 1;
-        const price = parseInt(priceEl.value) || 0;
+        const price = parseFloat(priceEl.value) || 0;
         total += qty * price;
         if (items[i]) {
             updates.push({ id: items[i].id, quantity: qty, unit_price: price });

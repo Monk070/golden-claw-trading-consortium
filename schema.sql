@@ -45,7 +45,7 @@ create trigger on_auth_user_created
 create table public.custom_prices (
   id uuid default gen_random_uuid() primary key,
   item_key text unique not null,
-  custom_price integer not null,
+  custom_price numeric(10,2) not null,
   updated_by uuid references public.profiles(id),
   updated_at timestamptz default now()
 );
